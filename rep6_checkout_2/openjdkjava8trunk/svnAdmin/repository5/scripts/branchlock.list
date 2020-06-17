@@ -1,0 +1,13 @@
+# IMPORTANT!  Entries for locked branches must not have any leading or trailing spaces.
+#             This is so the regexp in the validation script can accurately match only
+#             the exact branchname and not have any false positives.
+#             For example, "LATEST_ATREIDES" should not match "LATEST_ATREIDES_PROD",
+#             so the regexp will look for "^LATEST_ATREIDES$".  Any leading/trailing
+#             characters (including spaces) will break this.
+
+## Omnius ##
+86SERVICERELEASE1
+
+### active branches -- may need to restrict as circumstances dictate
+#trunk jdas snegi pkaurrana bporter amit.kalia psrivastav ragarwal manmohan.singh amar.mukerji alok.shishodia aagrawal aquinn msaad jgemski russ.w pdharmala paul.becker cgibbs rdhanai peter.wikander jeff.evans kevin.miller rebuild
+trunk amit.kalia paul.becker rebuild dbernstein rdhanai

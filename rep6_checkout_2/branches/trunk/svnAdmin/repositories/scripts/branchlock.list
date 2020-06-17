@@ -1,0 +1,146 @@
+# IMPORTANT!  Entries for locked branches must not have any leading or trailing spaces.
+#             This is so the regexp in the validation script can accurately match only
+#             the exact branchname and not have any false positives.
+#             For example, "LATEST_ATREIDES" should not match "LATEST_ATREIDES_PROD",
+#             so the regexp will look for "^LATEST_ATREIDES$".  Any leading/trailing
+#             characters (including spaces) will break this.
+
+## Omnius ##
+86SERVICERELEASE1
+
+### active branches -- may need to restrict as circumstances dictate
+#trunk brajendra.singh  rebuild pdeve rsingh pkaurrana Bert.Porter amit.kalia psrivastav alok.shishodia aagrawal msaad  pdharmala cgibbs rebuild rishi.aggarwal charles.park nivedita.paul nanarao.yarragunta shalini.gupta ksaxena vroy chetna.chandwani snegi mraj naresh.sharma agupta rdhanai wallace.baggaley ekalra
+#trunk jdas amit.kalia paul.becker rebuild pchauhan chetna.chandwani dheeraj.singh mraj tjain ragarwal manmohan.singh rishi.aggarwal wallace.baggaley ksaxena shalini.gupta
+#trunk jdas amit.kalia paul.becker rebuild bporter pdharmala psrivastav manmohan.singh amar.mukerji alok.shishodia aagrawal msaad pkaurrana cgibbs nivedita.paul parora vijen.sharma naresh.sharma pdeve 
+#trunk amit.kalia paul.becker rebuild pdharmala pkaurrana bporter nivedita.paul manmohan.singh rishi.aggarwal msaad psrivastav aagrawal ksaxena shalini.gupta naresh.sharma parora amit.gupta agupta tjain mraj snegi shiv.gupta mukul ajain vroy chetna.chandwani sandeep.dwivedi ragarwal ekalra nsingh bsingh rdhanai jeff.evans pdeve pdharmala gaurav.bathla
+#trunk amit.kalia paul.becker rebuild pdharmala pkaurrana bporter nivedita.paul manmohan.singh rishi.aggarwal msaad psrivastav aagrawal ksaxena shalini.gupta naresh.sharma parora amit.gupta agupta tjain mraj snegi shiv.gupta mukul ekalra nsingh bsingh
+#trunk amit.kalia paul.becker rebuild pdharmala nivedita.paul wallace.baggaley bporter pkaurrana
+#trunk amit.kalia paul.becker rebuild ajain vroy wallace.baggaley tjain ragarwal psrivastav jeff.evans aagrawal mukul
+#trunk amit.kalia rebuild mcr pkaurrana pdeve chetna.chandwani mraj shalini.gupta ksaxena bporter psrivastav nanarao.yarragunta shalini.gupta msaad naresh.sharma aagrawal pdharmala sandeep.dwivedi gaurav.bathla rishi.aggarwal
+#TTHRMES prawat naveen.kumar ravsingh ajsain rsingh
+#trunk amit.kalia rebuild alok.shishodia
+
+#Post85Bronze kkishore kaushalendra.singh mraj mukul ragarwal rgopalan rjain rseth rsingh tjain psrivastav cgilmore pdharmala peter.mularien jitender.gosain 
+#Post85Silver aquinn bmalhotra kkishore mraj mukul ragarwal rjain sandeep.dwivedi tjain
+
+## Atreides dev ##
+## Atreides prod ##
+
+# Sept 2010 Review: https://confluence.aspdeploy.com/display/SCM/Sep+2010+Branch+Review
+# Please Review / Lock
+
+Assessments87Temp
+RecruitersGloves
+YumIndia
+87SR1
+
+# Retain and Lock
+85SR11HOTFIXES
+86SERVICERELEASE1
+86SR1HOTFIX
+86SR1HOTFIXES
+86SR2HOTFIXES
+86SR3HOTFIXES
+86SR4HOTFIXES
+86SR5HOTFIXES
+ChangeOrder2
+ChangeOrder3
+ConsoliJAF
+#LATEST_albertson2_3_production - still used for classic hourly
+Post85Bronze
+Post85Silver
+gt_sept
+#Lock SSV branch
+SSV
+86archive
+CEPost85
+CEPost85SR8
+CEPost86SR1
+V90XDBFraggers amit.kalia mcr rebuild
+V90SR13HOTFIXES amit.kalia mcr rebuild
+#JBR_ASMT_MOVE amit.kalia mcr rebuild
+#V90R13HOTFIXES2 amit.kalia mcr rebuild
+#V90SR12HOTFIXES amit.kalia mcr rebuild
+#V9XSpectrum amit.kalia mcr rebuild
+#V90SR20HOTFIXES amit.kalia mcr rebuild
+V90SR13Project  amit.kalia mcr rebuild
+V90SR15pectrum amit.kalia mcr rebuild
+V90SR18pectrum amit.kalia mcr rebuild
+V90SR19pectrum amit.kalia mcr rebuild
+V90SR131Spectrum amit.kalia mcr rebuild
+V90SR12Project  amit.kalia mcr rebuild
+V90SR10Project amit.kalia mcr rebuild
+V90SR11Project amit.kalia mcr rebuild
+V90SR15Project amit.kalia mcr rebuild
+V90SR13Nerfherders amit.kalia mcr rebuild
+V90SR15Nerfherders amit.kalia mcr rebuild
+V90SR18Nerfherders amit.kalia mcr rebuild
+V90SR17Nerfherders amit.kalia mcr rebuild
+V90SR19Nerfherders amit.kalia mcr rebuild
+V90SR20Nerfherders amit.kalia mcr rebuild
+V9013Nerfherders amit.kalia mcr rebuild ksaxena
+V9010Nerfherders amit.kalia mcr rebuild
+SR90Nerfherders amit.kalia mcr rebuild
+V90SR20HOTFIXES amit.kalia mcr rebuild
+#SpectrumSR20I9 amit.kalia mcr rebuild
+V90SR8Project amit.kalia mcr rebuild
+V90SR9Project amit.kalia mcr rebuild
+V90SR7Project amit.kalia mcr rebuild
+V90SR5Project amit.kalia mcr rebuild
+V90SRProject amit.kalia mcr rebuild
+SRXNerfherders amit.kalia mcr rebuild
+V90Spectrum amit.kalia mcr rebuild
+V90XSpectrum amit.kalia mcr rebuild
+V90SR6Integration amit.kalia mcr rebuild
+V90SR16Spectrum  amit.kalia mcr rebuild
+#V90SR16Spectrum  amit.kalia mcr rebuild
+V90SR16Nerfherders amit.kalia mcr rebuild
+V90SR21Nerfherders amit.kalia mcr rebuild
+V90SR23Nerfherders amit.kalia mcr rebuild
+V90SRXSynergy amit.kalia mcr rebuild
+#V90SR14Spectrum amit.kalia mcr rebuild
+#V90Integration amit.kalia paul.becker rebuild chetna.chandwani dheeraj.singh sandeep.dwivedi gaurav.bathla ragarwal vroy ajain tjain mukul gaurav.goyal rdhanai snegi mraj shiv.gupta kaushalendra.singh ekalra nsingh bmalhotra vijen.sharma agupta
+#V90Integration amit.kalia paul.becker rebuild vroy ajain mukul pchauhan tjain mraj naresh.sharma
+#V90Integration amit.kalia paul.becker rebuild vroy ajain mukul pchauhan chetna.chandwani tjain vijen.sharma gaurav.goyal naresh.sharma
+V90XSynergy  amit.kalia mcr rebuild
+#V90Spectrum amit.kalia mcr rebuild
+V90SR4Project amit.kalia mcr rebuild
+V90SR3Project amit.kalia paul.becker rebuild
+V90SR2Project amit.kalia paul.becker rebuild
+V90Integration amit.kalia paul.becker rebuild
+V90Integration_TEMP amit.kalia paul.becker rebuild
+V90SR1Integration  amit.kalia paul.becker rebuild
+V90SR2Integration amit.kalia paul.becker rebuild
+V90SR6CMSST amit.kalia paul.becker rebuild
+VSR2Pioneers amit.kalia paul.becker rebuild
+V90SR1Integration amit.kalia paul.becker rebuild
+#V90DBF_HBM_DEV amit.kalia paul.becker rebuild
+V90DBF_HBM amit.kalia paul.becker rebuild
+#V90SR2Project amit.kalia paul.becker rebuild pkaurrana
+V91CMSST amit.kalia paul.becker rebuild
+V9XPioneers amit.kalia paul.becker rebuild
+SpectrumDev amit.kalia rebuild paul.becker
+V90SR1Project amit.kalia paul.becker rebuild
+V91Pioneers amit.kalia paul.becker rebuild
+#V89Pioneers amit.kalia paul.becker rebuild
+V88SR1project amit.kalia paul.becker rebuild
+V88SR2project amit.kalia paul.becker rebuild
+V88SR3project amit.kalia paul.becker rebuild
+V88SR4project amit.kalia paul.becker rebuild
+#V90SR1Project amit.kalia paul.becker rebuild
+#V88SR3Spectrum amit.kalia paul.becker rebuild
+#V90DBFraggers amit.kalia paul.becker rebuild
+#V901DBFraggers amit.kalia paul.becker rebuild
+#V90DBFraggersNew amit.kalia paul.becker rebuild
+V89DBFraggers amit.kalia paul.becker rebuild jgemski
+V90SR22DBFraggers amit.kalia  rebuild 
+V90CMSST amit.kalia paul.becker rebuild
+V90SR8Nerfherders amit.kalia mcr rebuild 
+V89Nerfherders amit.kalia paul.becker rebuild wallace.baggaley
+#ChangeOrder88 amit.kalia paul.becker rebuild
+#V88Everify amit.kalia paul.becker pchauhan snegi
+88GLOVES_AM amit.kalia paul.becker
+#88GLOVES_AM amit.kalia paul.becker chetna.chandwani rishi.aggarwal rseth mraj sandeep.dwivedi
+# End Sept 2010 Cleanup Effort
+#PeopleAnswersProject_2
+#91Mobile amit.kalia mcr rebuild 

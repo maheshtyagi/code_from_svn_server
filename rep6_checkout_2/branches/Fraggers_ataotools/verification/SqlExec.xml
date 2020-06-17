@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="dbi" basedir="." default="debug">
+
+  <property file="${jboss.home}/standalone/deployments/atao.ear/atao.war/WEB-INF/classes/custom.properties" />
+
+
+
+  <path id="sqlexec.class.path">
+    <fileset dir="${BOM.local.dir}/libs">
+	<include name="ojdbc*.jar" />
+    </fileset>
+  </path>
+
+  <taskdef resource="net/sf/antcontrib/antlib.xml">
+    <classpath>
+      	<pathelement location="${BOM.local.dir}/libs/ant-contrib.jar"/>
+    </classpath>
+  </taskdef>
+
+
+
+  <target name="RunSql"  description="Run a sql command">
+    <echo message="Using database properties in ${jboss.home}/standalone/deployments/atao.ear/atao.war/WEB-INF/classes/custom.properties"/>
+
+<!--  use logical db to specify which actual database to use   -->
+    <propertycopy property="atao.persist.jdbc.driver" override="true" from="${target.db}.atao.persist.jdbc.driver" />
+    <propertycopy property="atao.persist.jdbc.url" override="true" from="${target.db}.atao.persist.jdbc.url" />
+    <propertycopy property="atao.persist.jdbc.user" override="true" from="${target.db}.atao.persist.jdbc.user" />
+    <propertycopy property="atao.persist.jdbc.pass" override="true" from="${target.db}.atao.persist.jdbc.pass" />
+    <echo message="URL: ${atao.persist.jdbc.url}" />
+    <echo message="User: ${atao.persist.jdbc.user}" />
+    <echo message="Password: ${atao.persist.jdbc.pass}" />
+
+    <sql
+    driver="${atao.persist.jdbc.driver}"
+    url="${atao.persist.jdbc.url}"
+    userid="${atao.persist.jdbc.user}"
+    output="${queryfile}.dat"
+    password="${atao.persist.jdbc.pass}"
+    expandProperties="true"
+    print="true"
+    showheaders="false"
+    showtrailers="false"
+    classpathref="sqlexec.class.path"
+    ><![CDATA[
+
+${query};
+
+]]></sql>
+
+
+  </target>
+
+
+
+
+</project>

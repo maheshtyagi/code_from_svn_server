@@ -1,0 +1,5 @@
+client.assets=QuestionResponse,MailTemplate
+client.list.assets=KTMD Base Client,KTMD Assessments
+library.assets=DisplayText,DisplaySetValues
+comparelocales=false
+----------------------------------------------------------

@@ -1,0 +1,8 @@
+<project name="ftp to Noida" default="ftp-to-noida" basedir=".">
+
+    <target name="ftp-to-noida" description="Upload the .zip to Noida">
+        <echo message="Operating in directory ${bamboo.project.key}-${bamboo.plan.key}"/>
+        <ant dir="../${bamboo.project.key}-${bamboo.plan.key}" target="upload-to-di-ftp"/>
+    </target>
+
+</project>

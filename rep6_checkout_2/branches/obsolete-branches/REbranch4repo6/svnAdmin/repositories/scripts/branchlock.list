@@ -1,0 +1,81 @@
+
+# IMPORTANT!  Entries for locked branches must not have any leading or trailing spaces.
+#             This is so the regexp in the validation script can accurately match only
+#             the exact branchname and not have any false positives.
+#             For example, "LATEST_ATREIDES" should not match "LATEST_ATREIDES_PROD",
+#             so the regexp will look for "^LATEST_ATREIDES$".  Any leading/trailing
+#             characters (including spaces) will break this.
+
+### Locked permanently
+ALBERTSON_1_2
+albertson1_production
+albertson_2_3_dev
+albertson2_production
+delroy_production
+frink_production
+idaho_uat
+LATEST_albertson1prod_atr
+LATEST_albertson-2_0_4_atr
+LATEST_albertson2_2_production
+LATEST_albertson_2_3
+LATEST_albertson2_3_dev_new
+LATEST_HAYT
+
+## Atreides ##
+LATEST_ATREIDES
+LATEST_ATREIDES_PROD
+LATEST_ATREIDES_SPRINT1_DEV
+## Norma ##
+LATEST_NORMA
+LATEST_NORMA_ONBOARDING
+## Rabban / 8.1 ##
+LATEST_RABBAN
+LATEST_RABBAN_GOLD
+LATEST_RABBAN_ONBOARDING
+## Caladan Phase 1 / 8.2 ##
+LATEST_CALADAN_P1
+LATEST_CALADAN_P1_GOLD
+LATEST_CALADAN_P1_ONBOARDING
+## Caladan Phase 2 / 8.3 ##
+LATEST_CALP2_CA6260_PERF
+LATEST_CALP2_RT4179
+LATEST_CALADAN_P2
+LATEST_CALADAN_P2_ONBOARDING
+## Omnius 8.4 RC6 PreGoLive##
+LATEST_OMNIUS_PREGOLIVE_HOTFIXES
+LATEST_OMNIUS_ONBOARDING_PREGOLIVE_HOTFIXES
+## Standalone OB ##
+LATEST_ONBOARDING
+## Omnius ##
+LATEST_OMNIUS
+LATEST_OMNIUS_ONBOARDING
+LATEST_OMNIUS_INTEGRATIONS
+86SERVICERELEASE1
+
+
+## 8.6 ##
+YumEmail
+YumAustralia
+BlackGloves
+
+### active branches -- may need to restrict as circumstances dictate
+trunk jbunker jdas jdunk jeff.evans agupta snegi jbiggs pkaurrana bporter pdeve parora bmalhotra psrivastav ragarwal donna.tucker prasad.tadi kevin.miller manmohan.singh amar.mukerji alok.shishodia aagrawal pchauhan aquinn ksaxena ravi.kumar shilpi.saxena akhare shakshi.shinghal msaad tjain naresh.sharma rishi.aggarwal
+#Post85Bronze kkishore kaushalendra.singh mcherry mraj mukul ragarwal rgopalan rjain rseth rsingh tjain psrivastav cgilmore pdharmala peter.mularien jbunker jitender.gosain
+#Post85Silver aquinn bmalhotra kkishore mcherry mraj mukul ragarwal rjain sandeep.dwivedi tjain
+
+## Atreides dev ##
+LATEST_ATREIDES_ONBOARDING  agupta atalari jbunker jpetronio kkishore mcherry nsingh psrivastav rgopalan vmittal
+## Atreides prod ##
+LATEST_ATREIDES_ONBOARDING_PROD jbunker kkishore mcherry
+
+## Denali ##
+LATEST_DENALI_CI_BRONZE short_build mcherry
+LATEST_DENALI_OB_BRONZE short_build
+
+LATEST_DENALI_CI_SILVER kkishore mcherry
+LATEST_DENALI_OB_SILVER kkishore mcherry
+
+## 8.6 Code lines Feature branches ##
+Gloves kkishore mcherry rjain jitender.gosain
+
+RecruitersGloves kkishore rjain rseth

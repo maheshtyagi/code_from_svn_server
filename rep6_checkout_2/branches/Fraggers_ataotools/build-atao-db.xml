@@ -1,0 +1,199 @@
+<?xml version="1.0"?>
+<project name="build-atao-db" default="new-db-from-filesystem" basedir=".">
+
+<taskdef resource="net/sf/antcontrib/antlib.xml" />
+<taskdef resource="net/sf/incanto/antlib.xml" />
+<!-- The Svn4Ant distribution .jar file and all
+         dependents must be in ant's classpath -->
+
+<property environment="env"/>
+
+<!-- Importing common utilities -->
+<import file="commonUtil.xml"/>
+
+<!--Creating new DB user -->
+<target name="new-db-user" description="drop and re-create a DB user">
+        
+        <echo message="Dropping and recreating DB user ${new.db.user}" level="info"/>
+        <echo message="url=${new.db.url} userid=${dba.user} password=${dba.pass} " level="info"/>
+        <sql
+            driver="oracle.jdbc.driver.OracleDriver"
+            url="${new.db.url}"
+            userid="${dba.user}"
+            password="${dba.pass}"
+            output="newDBuser.log"
+            delimiter="/"
+            delimitertype="row">
+            begin
+               createataouser('${new.db.user}');
+            end;
+            /
+        </sql>
+</target>
+
+<!--Target for copying Assessment file for new DB -->
+<target name="copy-assessments-files-for-newdb" description="Copy selected Assessments components to aTao filesystem" if="ASSMNTfrom.revision" >
+        <echo message="Add Assessment .sql and .csv to aTao workarea" level="info" />
+        <mkdir dir="${build.base}/misc/sqlscripts/Assessments"/>
+        <copy todir="${build.base}/misc/sqlscripts/Assessments">
+            <fileset dir="${build.baseRoot}/assessments/misc/sqlscripts" includes="**/*.*"/>
+        </copy>
+        <mkdir dir="${build.base}/misc/sqlscripts/Assessments/ddl"/>
+        <copy todir="${build.base}/misc/sqlscripts/Assessments/ddl">
+            <fileset dir="${build.baseRoot}/assessments/output/ddl"/>
+        </copy>
+        <mkdir dir="${build.base}/misc/Assessments"/>
+        <copy todir="${build.base}/misc/Assessments">
+            <fileset dir="${build.baseRoot}/assessments/misc/Scoring" includes="**/*.csv"/>
+        </copy>
+</target>
+
+<!--Target to backup database  from the application perspective-->
+<!-- need application to be installed -->
+
+<target name="backup-database" description="export current target.db.." depends="set-jboss-deploy-path">
+        <move file="export_db.log" tofile="export_db.log.old" verbose="true" failonerror="false"/>
+        <record name="export_db.log" action="start"/>
+            <xmlproperty file="${app.server.dir}/server/${jboss.deploy.path}/deploy/atao-ds.xml"/>
+            <property name="db.user" value="${datasources.local-tx-datasource.user-name}"/>
+            <property name="db.pass" value="${datasources.local-tx-datasource.password}"/>
+            <echo message="User: ${db.user}"/>
+            <echo message="Password: ${db.pass}"/>
+
+            <move file="${db.user}.dmp" tofile="${db.user}.dmp.old" verbose="true" failonerror="false"/>
+
+            <exec dir="${basedir}" executable="exp" failonerror="true">
+                    <arg line="${db.user}/${db.pass}@${db.tnsname} file=${db.user}.dmp owner=${db.user}"/>
+            </exec>
+        <record name="export_db.log" action="stop"/>
+</target>
+
+<!-- Explict export of the Database -->
+<target name="export-database" description="export current target.db..">
+        <move file="export_db.log" tofile="export_db.log.old" verbose="true" failonerror="false"/>
+        <record name="export_db.log" action="start"/>
+            <echo message="User: ${target.db}"/>
+            <echo message="Password: ${target.db}"/>
+            <tstamp/>
+			<property name="db.file" value="${target.db}_${DSTAMP}"/>
+            <exec dir="${basedir}" executable="${env.ORACLE_HOME}/bin/exp" failonerror="true">
+                    <arg value="${target.db}/${target.db}@${db.tnsname}"/>
+                    <arg value="file=${db.file}.dmp owner=${target.db}"/>
+            </exec>
+
+            <!-- Zip the Dump file before sending -->
+            <zip basedir="." destfile="${db.file}.dmp.zip" includes="${db.file}.dmp"/>
+            <antcall target="stage-db-dump" inheritall="true"/>
+        <record name="export_db.log" action="stop"/>
+ </target>
+
+<!-- Target to stage the DB dump to the ftp location  -->
+<target name="stage-db-dump">
+                <record name="stage-db-dump.log" action="start"/>
+                <!-- Depending on the type of builds we need to create needed directory path -->
+                <scp todir="${atao.db.stage.account}@${atao.db.stage.host}:${atao.db.dump.location}/"
+                        password="${atao.db.stage.password}"
+                        trust="true"
+                        passphrase=""
+                        verbose="true"  failonerror="true"> 
+                        <fileset dir=".">
+                                <include name="${db.file}.dmp.zip" />
+                        </fileset>
+                </scp>
+                <antcall target="notify-mail-list" inheritall="true"/>
+</target>
+
+<!-- Target to send e-mail notification to the group -->
+<target name="notify-mail-list" description="Notify everyone in mail.list of DB dump copy location">
+                <!-- Overwrite To list for Debug purposes -->
+                <if>
+                        <equals arg1="${donot.notify}" arg2="true" />
+                        <then>
+                                <property name="atao.db.stage.notification" value="HSGReleng@kronos.com" />
+                        </then>
+                </if>
+                <!-- To list can be a single user or Outlook group defined in antLocalSetting.properties -->
+                <mail mailhost="smtp.kronos.com" mailport="25" subject="Available: DB Dump ${db.file}.dmp.zip" tolist="${atao.db.stage.notification}" failonerror="false">
+                        <from address="TMDEastReleng@kronos.com"/>
+                        <replyto address="TMDEastReleng@kronos.com"/>
+                        <to address="TMDEastReleng@kronos.com"/>
+                        <message>
+                            The DB dump  ${db.file}.dmp.zip can be accessed at ${atao.db.stage.host} :${atao.db.dump.location}
+
+                            target.db       = ${target.db}
+                            
+                            The dump of DB ${target.db}  can be retrieved from here:
+			    
+			        ${atao.db.stage.account}@${atao.db.stage.host}://export/data/dev-ftp/azetra/keep1week/${db.file}.dmp.zip
+			        ftp://${atao.db.stage.host}/keep1week/${db.file}.dmp.zip
+                      </message>
+                </mail>
+            <echo message="Successfully sent mail to ${atao.db.stage.notification}" level="info" />
+</target>
+
+ <!-- target name for clover generation -->
+ <target name="clover-report-generation">
+         <ant antfile="${build.base}/build.xml" dir="${build.base}" inheritall="false">
+             <target name="xml-clover-report"/>
+             <target name="html-clover-report"/>
+         </ant>
+ </target>
+ 
+<!-- Main build target -->
+
+<target name="build">
+      <record name="build.log" action="start"/>
+        <if>
+            <equals arg1="${clover.coverage}" arg2="true" />
+            <then>
+                <ant antfile="${build.base}/build.xml" dir="${build.base}" inheritall="false">
+                    <target name="use-clover"/>
+                    <target name="new-release"/>
+                </ant>
+                <antcall target="clover-report-generation"/>
+            </then>
+            <else>
+                <ant antfile="${build.base}/build.xml" dir="${build.base}" inheritall="false">
+                    <target name="new-release"/>
+                </ant>
+            </else>
+        </if>
+        <if>
+          <equals arg1="${run.fulldb.export}" arg2="true" />
+            <then>
+              <ant antfile="${build.base}/build.xml" dir="${build.base}" inheritall="false">
+                <target name="full-database-export" />
+              </ant>
+            </then>
+        </if>
+        <delete>
+           <fileset dir="${build.base}/WEB-INF/lib" includes="atao-assessments.api-0.0.0.1.jar atao-assessments.impl-0.0.0.1.jar atao-assessments.model-0.0.0.1.jar"/>
+        </delete>
+      <record name="build.log" action="stop"/>
+
+      <record name="deploy-developer.log" action="start"/>
+     	  <ant antfile="${build.base}/build.xml" dir="${build.base}" inheritall="false">
+     	  	<target name="jars"/>
+     	  	<target name="deploy-developer-webapp"/>
+     	  </ant>
+          <delete>
+              <fileset dir="${build.base}/WEB-INF/lib" includes="atao-assessments.api-0.0.0.1.jar atao-assessments.impl-0.0.0.1.jar atao-assessments.model-0.0.0.1.jar"/>
+          </delete>
+      <record name="deploy-developer.log" action="stop"/>
+
+      <antcall target="build-and-add-assessments" />
+
+      <record name="create-ear-release.log" action="start"/>
+          <ant antfile="${build.base}/release.xml" dir="${build.base}" target="create-ear-release" inheritall="false"/>
+      <record name="create-ear-release.log" action="stop"/>
+</target>
+ 
+<!-- Main target for creating a new Database -->
+<target name="new-db-from-filesystem" depends="checkout-atao,copy-buildtime-configfiles, setup-build-number, build, copy-assessments-files-for-newdb, new-db-user">
+     <record name="acdb.log" action="start"/>
+	    <ant antfile="${build.base}/build.xml" dir="${build.base}">
+                <target name="all-clean-database"/>
+            </ant>
+     <record name="acdb.log" action="stop"/>
+</target>
+</project>
