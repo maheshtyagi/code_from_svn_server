@@ -1,0 +1,140 @@
+<project name="Dump and zip database" default="main" basedir=".">
+
+    <taskdef resource="net/sf/antcontrib/antlib.xml" />
+    <!-- for Oracle tasks -->
+    <taskdef resource="net/sf/incanto/antlib.xml" />
+    <!-- for SVN tasks -->
+    <taskdef resource="org/jwaresoftware/svn4ant/install/antlib.xml"/>
+
+    <property environment="env"/>
+
+    <target name="main" depends="set-date, clean-log-tables, dump-database"/>
+
+
+    <target name="dump-database" description="export and zip db..." depends="verify-input, read-properties">
+        <!-- Create the datapump dump while removing all output from previous runs -->
+        <parallel>
+            <exec dir="." executable="expdp" failonerror="true">
+                <arg value="${db.user}/${db.user}"/>
+                <arg value="schemas=${db.user}"/>
+                <arg value="directory=DATA_PUMP_DIR"/>
+                <arg value="dumpfile=${dpDumpFile}"/>
+            </exec>
+            <delete>
+                <fileset dir=".">
+                    <include name="*.dmp" />
+                    <include name="*.dpdmp" />
+                    <include name="*.gz" />
+                    <include name="*.zip" />
+                </fileset>
+            </delete>
+        </parallel>
+        <!-- Move the datapump dump here while creating exp dump -->
+        <parallel>
+            <move file="${env.DATA_PUMP_DIR}/${dpDumpFile}" todir="." verbose="true" failonerror="false"/>
+            <exec dir="." executable="exp" failonerror="true">
+                <arg value="${db.user}/${db.user}" />
+                <arg value="file=${expDumpFile}" />
+                <arg value="owner=${db.user}" /> 
+                <arg value="consistent=y" />
+            </exec>
+        </parallel>
+        <!-- create compressed copies -->
+        <parallel>
+            <zip basedir="." includes="${dpDumpFile}" destfile="${dpDumpFile}.zip"/>
+            <gzip src="${dpDumpFile}" destfile="${dpDumpFile}.gz"/>
+        </parallel>
+        <parallel>
+            <zip basedir="." includes="${expDumpFile}" destfile="${expDumpFile}.zip"/>
+            <gzip src="${expDumpFile}" destfile="${expDumpFile}.gz"/>
+        </parallel>
+    </target>
+
+
+    <target name="clean-log-tables" description="clean out log tables" depends="verify-input, read-properties">
+        <!-- We probably only need to run this 1x/week -->
+        <if>
+            <equals arg1="${day.of.week}" arg2="Sat" />
+            <then>
+                <antcall target="checkout-jbpm-scripts" />
+                <sql
+                    driver="oracle.jdbc.driver.OracleDriver"
+                    url="jdbc:oracle:thin:@localhost:1521:DEVHMC"
+                    userid="${db.user}"
+                    password="${db.user}"
+                    output="cleanupSQL.log">
+                    <![CDATA[
+                    truncate table AUTHENTICATIONEVENT;
+                    truncate table EXPIMPACTIVITIESLOG;
+                    delete from EXPIMPLOG;
+                    truncate table KIOSKIMPORTLOG;
+                    alter table kioskimportlog disable constraint FK_KIOSKIMPORTLOG_ERROR;
+                    truncate table ERROR;
+                    alter table kioskimportlog  enable constraint FK_KIOSKIMPORTLOG_ERROR;
+                    truncate table SS_ASSESSMENTSCOREINSTSCORE;
+                    delete from SS_ASSESSMENTSCORINGINSTANCE;
+                    purge recyclebin;
+                    update person_emaillog set mailbody = 'junk', mailsubject = 'junk' where datecreated < (sysdate - 14);
+                    update documentdata set content = TO_BLOB(UTL_RAW.CAST_TO_RAW('junk')) where datecreated < (sysdate - 14);
+                    update repositorydocumentdata set content = TO_BLOB(UTL_RAW.CAST_TO_RAW('junk')) where datecreated < (sysdate - 14);
+                    ]]>
+                    <!-- Will not work while the table-drop trigger is active
+                    <transaction src="dropJBPM.sql" />
+                    <transaction src="createJBPM.sql" /-->
+                </sql>
+
+            </then>
+        </if>
+    </target>
+
+
+    <target name="checkout-jbpm-scripts" description="Get scripts for JBPM drop/creation from repository">
+        <svnexport from="${svn.url}/atao/misc/sqlscripts/jbpm" to="." />
+    </target>
+
+
+    <target name="read-properties">
+        <property file="date.properties"/>
+        <property file="ftp.properties"/>
+        <property name="filename.string" value="${db.user}-${formatted.date}"/>
+        <property name="expDumpFile" value="${filename.string}.dmp"/>
+        <property name="dpDumpFile" value="${filename.string}.dpdmp"/>
+    </target>
+
+
+    <target name="set-date" description="set date-related properties for this run">
+        <propertyfile file="date.properties" comment="This is a generated property file">
+            <entry  key="formatted.date" type="date" value="now" pattern="yyyyMMddHHmm"/>
+            <entry  key="day.of.week"    type="date" value="now" pattern="E"/>
+        </propertyfile>
+    </target>
+
+
+    <target name="upload-to-di-ftp" description="Upload the .zip to Noida" depends="verify-input, read-properties">
+
+        <!-- First delete any existing dumps on the remote server-->
+        <ftp action="del"
+			server="${ftp.machine}"
+			userid="${ftp.user}"
+			password="${ftp.password}"
+			remotedir="${ftp.remoteDir}">
+            <fileset>
+                <include name="${db.user}*.gz"/>
+            </fileset>
+        </ftp>
+        <!-- Now upload the new one -->
+		<ftp server="${ftp.machine}"
+			userid="${ftp.user}"
+			password="${ftp.password}"
+			remotedir="${ftp.remoteDir}">
+            <fileset dir="${basedir}" includes="${db.user}-*.dmp.gz"/>
+        </ftp>
+    </target>
+
+
+    <target name="verify-input" description="Verify that a DB name has been set">
+        <fail unless="db.user" message="EXITING: required parameter db.user not set. Should be specified as a -D parameter on command line."/>
+        <echo message="Operating on schema ${db.user}"/>
+    </target>
+
+</project>

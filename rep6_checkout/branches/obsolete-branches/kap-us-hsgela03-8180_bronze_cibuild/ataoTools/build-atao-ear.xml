@@ -1,0 +1,555 @@
+<?xml version="1.0"?>
+<!-- -->
+<!--    Copyright:    Copyright (C) DSI Inc., 2005-2008  -->
+<!--      Company:    DSI -->
+<!--       Author:    ebagdonas, et al. -->
+<!-- -->
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+<project name="continuousBuild" default="ci-build" basedir=".">
+    <taskdef resource="net/sf/antcontrib/antlib.xml"/>
+    <taskdef resource="net/sf/incanto/antlib.xml"/>
+    <taskdef resource="org/jwaresoftware/svn4ant/install/antlib.xml"/>
+
+    <!-- extended variant of parallel that can kill all running threads if one fails -->
+    <taskdef name="parallelX" classname="com.kronos.ant.tasks.ParallelX"/>
+    <!--classpath="${build.base}/thirdparty/build" -->
+
+    <!-- Read in local properties-->
+    <property file="./localConfigFiles/buildAndRelease/antLocalSettings.properties"/>
+    <property file="./localConfigFiles/buildAndRelease/assessments/antLocalSettings.properties"/>
+    <property file="localEarBuild.properties"/>
+    <property name="build.base" value="${build.baseRoot}/atao"/>
+
+    <property name="buildtime.config.path" value="${global.config.path}/buildAndRelease"/>
+    <property name="packageinstall.config.path" value="${global.config.path}/packageAndInstall"/>
+    <property name="package.base" value="${basedir}/packageWorkDir"/>
+    <property name="runtime.config.path" value="${global.config.path}/runtime"/>
+    <property name="jboss.host" value="localhost"/>
+
+    <property environment="env"/>
+    <property name="app.server.dir" value="${env.JBOSS_HOME}"/>
+    <property name="java.home.dir" value="${env.JAVA_HOME}"/>
+    <property name="ant.lib.dir" value="${env.ANT_HOME}/lib"/>
+    <property name="cpu.arch" value="${env.HOSTTYPE}"/>
+
+
+    <target name="test-remote-vars">
+        <ant antfile="${build.base}/functionalTests/HubController/build.xml" dir="${build.base}" inheritall="false">
+            <target name="test-remote-vars"/>
+        </ant>
+    </target>
+
+
+    <!-- The default target - are we even using these? checkout-TMD-help, assemble-TMD-help -->
+    <target name="clover-report" unless="no.clover.report" depends="prepare-for-reports, create-reports, reset-clover-db, start-jboss43"/>
+    <target name="ci-build-no-tests" depends="checkout-and-compile, deploy"/>
+    <target name="ci-build" depends="checkout-and-compile, deploy">
+        <trycatch property="parallel-error" reference="parallel">
+            <try>
+                <parallelX stopthreadsonfail="true" failonany="true">
+                    <antcall target="junit-tests" inheritall="true"/>
+                    <antcall target="selenium-tests" inheritall="true"/>
+                </parallelX>
+            </try>
+            <catch>
+                <fail message="A test thread failed: ${parallel-error}"/>
+            </catch>
+			<finally>
+				<antcall target="clover-report" inheritall="true"/>
+			</finally>
+        </trycatch>
+    </target>
+
+    <target name="ci-build-only-tests">
+        <trycatch property="parallel-error" reference="parallel">
+            <try>
+                <parallelX stopthreadsonfail="true" failonany="true">
+                    <antcall target="junit-tests" inheritall="true"/>
+                    <antcall target="selenium-tests" inheritall="true"/>
+                </parallelX>
+                <antcall target="clover-report" inheritall="true"/>
+            </try>
+            <catch>
+                <fail message="A test thread failed: ${parallel-error}"/>
+            </catch>
+        </trycatch>
+    </target>
+
+    <target name="ci-build-only-junit" depends="checkout-and-compile, deploy">
+        <antcall target="junit-tests" inheritall="true"/>
+        <antcall target="clover-report" inheritall="true"/>
+    </target>
+    
+        <target name="ci-build-only-junit-nodeploy" depends="checkout-and-compile">
+            <antcall target="junit-tests" inheritall="true"/>
+            <antcall target="clover-report" inheritall="true"/>
+    </target>
+
+
+    <target name="ci-build-only-selenium" depends="checkout-and-compile, deploy">
+        <antcall target="selenium-tests" inheritall="true"/>
+        <antcall target="clover-report" inheritall="true"/>
+    </target>
+    
+    <target name="just-ci-build-only-selenium">
+        <antcall target="selenium-tests" inheritall="true"/>
+        <antcall target="clover-report" inheritall="true"/>
+    </target>
+
+
+    <target name="checkout-and-compile" unless="no.checkoutcompile.build">
+        <antcall target="checkout-atao"/>
+        <antcall target="copy-buildtime-configfiles"/>
+        <antcall target="make-clover-dirs"/>
+        <antcall target="setup-build-number"/>
+        <antcall target="setup-assessmentbuild-number"/>
+        <antcall target="stop-jboss43"/>
+        <antcall target="build"/>
+    </target>
+
+
+    <target name="deploy" unless="no.deploy.build">
+        <property file="${build.base}/antGlobalLocalSettings.properties"/>
+        <antcall target="prepare-appserver-for-deployment"/>
+        <antcall target="unzip-and-package-release"/>
+        <antcall target="deploy-ear"/>
+        <antcall target="copy-runtime-configfiles"/>
+        <antcall target="cleanout-jboss-generated-files"/>
+        <antcall target="restart-jboss"/>
+    </target>
+
+
+    <target name="make-clover-dirs">
+        <mkdir dir="${build.base}/output/clover/html"/>
+        <mkdir dir="${build.base}/output/clover/xml"/>
+    </target>
+
+
+    <target name="test-and-report" depends="build">
+        <parallelX stopthreadsonfail="true" failonany="true">
+            <antcall target="junit-tests" inheritall="true"/>
+            <antcall target="selenium-tests" inheritall="true"/>
+        </parallelX>
+        <antcall target="clover-report" inheritall="true"/>
+    </target>
+
+
+    <target name="junit-tests" unless="no.junit.build">
+        <ant antfile="${build.base}/build.xml" dir="${build.base}" inheritall="false">
+            <target name="test"/>
+        </ant>
+    </target>
+
+
+    <target name="selenium-tests" unless="no.se.build">
+        <ant antfile="${build.base}/functionalTests/HubController/build.xml" dir="${build.base}/functionalTests"
+             inheritall="true">
+            <target name="run"/>
+        </ant>
+    </target>
+
+
+    <target name="selenium-stop">
+        <ant antfile="${build.base}/functionalTests/HubController/build.xml" dir="${build.base}/functionalTests"
+             inheritall="true">
+            <target name="stop"/>
+        </ant>
+    </target>
+
+
+    <target name="restart-jboss" depends="stop-jboss43, cleanout-jboss-generated-files,  start-jboss43"/>
+
+
+    <target name="create-reports">
+        <ant antfile="${build.base}/build.xml" dir="${build.base}" inheritall="false">
+            <target name="html-clover-report"/>
+        </ant>
+        <ant antfile="${build.base}/build.xml" dir="${build.base}" inheritall="false">
+            <target name="xml-clover-report"/>
+        </ant>        
+    </target>
+    
+    <target name="prepare-for-reports" description="Delete previous reports and shut down app server">
+        <parallel>
+            <!-- Clean the HTML & XML report directories -->
+            <delete>
+                <fileset dir="${build.base}/output/clover/html" includes="**/*.*"/>
+                <fileset dir="${build.base}/output/clover/xml" includes="**/*.*"/>
+            </delete>
+            <!-- Shut down the app to flush the collected data-->
+            <antcall target="stop-jboss43" />
+        </parallel>
+    </target>
+    
+    <target name="reset-clover-db" description="Clean the Clover DB">
+        <ant antfile="build.xml" dir="${build.base}" target="clean-clover"/>
+        <ant antfile="build.xml" dir="${build.base}" target="use-clover"/>
+    </target>
+
+
+    <target name="build">
+        <record name="build.log" action="start"/>
+        <ant antfile="${build.base}/build.xml" dir="${build.base}" inheritall="false">
+            <target name="use-clover"/>
+            <target name="new-release"/>
+        </ant>
+        <delete>
+            <fileset dir="${build.base}/WEB-INF/lib"
+                     includes="atao-assessments.api-0.0.0.1.jar atao-assessments.impl-0.0.0.1.jar atao-assessments.model-0.0.0.1.jar"/>
+        </delete>
+        <record name="build.log" action="stop"/>
+
+        <record name="deploy-developer.log" action="start"/>
+        <ant antfile="${build.base}/build.xml" dir="${build.base}" inheritall="false">
+            <target name="jars"/>
+            <target name="deploy-developer-webapp"/>
+        </ant>
+        <delete>
+            <fileset dir="${build.base}/WEB-INF/lib"
+                     includes="atao-assessments.api-0.0.0.1.jar atao-assessments.impl-0.0.0.1.jar atao-assessments.model-0.0.0.1.jar"/>
+        </delete>
+        <record name="deploy-developer.log" action="stop"/>
+
+        <antcall target="build-and-add-assessments"/>
+
+        <record name="create-ear-release.log" action="start"/>
+        <ant antfile="${build.base}/release.xml" dir="${build.base}" target="create-ear-release" inheritall="false"/>
+        <record name="create-ear-release.log" action="stop"/>
+    </target>
+
+
+    <target name="build-and-add-assessments" description="Build Assessments and add components to aTao release vehicle" >
+        <record name="assessments.log" action="start"/>
+        <property file="${build.base}/antGlobalLocalSettings.properties"/>
+            <echo message="  atao.build.number = ${atao.build.number}" level="info"/>
+            <ant antfile="${build.baseRoot}/assessments/build.xml" dir="${build.baseRoot}/assessments" target="new-no-tests" inheritall="false"/>
+            <ant antfile="${build.baseRoot}/assessments/build.xml" dir="${build.baseRoot}/assessments" target="exportddl" inheritall="false"/>
+            <ant antfile="${build.baseRoot}/assessments/build.xml" dir="${build.baseRoot}/assessments" target="deploy-developer" inheritall="false"/>
+            <!-- Add Assessment libraries, binaries and .sql to release vehicle -->
+            <echo message="architecture is ${cpu.arch}" level="info"/>
+            <mkdir dir="${build.base}/relWorkArea/${atao.build.number}/wardir/WEB-INF/binaries"/>
+            <if>
+                <equals arg1="${cpu.arch}" arg2="x86_64"/>
+                <then>
+                    <echo message="copying 64-bit .so" level="info"/>
+                    <copy todir="${build.base}/relWorkArea/${atao.build.number}/wardir/WEB-INF/binaries">
+                        <fileset dir="${build.baseRoot}/assessments/ScoringLibraries/64-bit Shared Libraries" includes="*.*"/>
+                    </copy>
+                </then>
+                <else>
+                    <echo message="copying 32-bit .so" level="info"/>
+                    <copy todir="${build.base}/relWorkArea/${atao.build.number}/wardir/WEB-INF/binaries">
+                        <fileset dir="${build.baseRoot}/assessments/ScoringLibraries" includes="*.*"/>
+                    </copy>
+                </else>
+            </if>
+            <mkdir dir="${build.base}/relWorkArea/${atao.build.number}/misc/sqlscripts/Assessments"/>
+            <copy todir="${build.base}/relWorkArea/${atao.build.number}/misc/sqlscripts/Assessments">
+                <fileset dir="${build.baseRoot}/assessments/misc/sqlscripts" includes="**/*.*"/>
+            </copy>
+            <mkdir dir="${build.base}/relWorkArea/${atao.build.number}/misc/sqlscripts/Assessments/ddl"/>
+            <copy todir="${build.base}/relWorkArea/${atao.build.number}/misc/sqlscripts/Assessments/ddl">
+                <fileset dir="${build.baseRoot}/assessments/output/ddl"/>
+            </copy>
+            <!-- Per RE-46, include the Assessments .csv files in 8.5 release vehicles -->
+            <mkdir dir="${build.base}/relWorkArea/${atao.build.number}/misc/Assessments"/>
+            <copy todir="${build.base}/relWorkArea/${atao.build.number}/misc/Assessments">
+                <fileset dir="${build.baseRoot}/assessments/misc/Scoring" includes="**/*.csv"/>
+            </copy>
+        <record name="assessments.log" action="stop"/>
+    </target>
+
+
+    <target name="checkout-atao">
+        <record name="checkout-atao.log" action="start"/>
+
+        <!-- Decide whether to keep a backup of the previous checkout directory (may be safer but uses more space) -->
+        <if>
+            <equals arg1="${keep.build.files}" arg2="true"/>
+            <then>
+                <move file="${build.baseRoot}.old" tofile="${build.baseRoot}.old.delete" failonerror="false"/>
+                <move file="${build.baseRoot}" tofile="${build.baseRoot}.old" failonerror="false"/>
+            </then>
+        </if>
+
+        <!-- Now check out a fresh copy and in parallel delete anything obsolete -->
+        <echo message="=========> Check-out a fresh copy of revision ${CIfrom.revision} from ${svn.checkout.url}"
+              level="info"/>
+        <parallel>
+            <svncheckout from="${svn.checkout.url}" to="${build.base}" revision="${CIfrom.revision}"/>
+            <delete dir="${build.baseRoot}.old.delete" failonerror="false"/>
+        </parallel>
+        <chmod file="${build.base}/functionalTests" perm="ugo+rwx"/>
+        <mkdir dir="${build.base}/WEB-INF/lib"/>
+        <record name="checkout-atao.log" action="stop"/>
+        <antcall target="checkout-assessments"/>
+    </target>
+
+
+    <target name="checkout-assessments">
+        <record name="checkout-assessments.log" action="start"/>
+            <echo message="=========> Check-out a fresh copy of revision ${ASSMNTfrom.revision} from ${svn.ASSMNTcheckout.url}" level="info" />
+            <svncheckout from="${svn.ASSMNTcheckout.url}" to="${build.baseRoot}/assessments" revision="${ASSMNTfrom.revision}" />
+        <record name="checkout-assessments.log" action="stop"/>
+    </target>
+
+
+    <target name="checkout-TMD-help">
+        <record name="checkout-TMD-help.log" action="start"/>
+            <svncheckout from="${svn.help.checkout.url}" to="${build.baseRoot}/HelpSource"/>
+        <record name="checkout-TMD-help.log" action="stop"/>
+    </target>
+
+
+    <target name="cleanout-jboss-generated-files" depends="set-jboss-deploy-path">
+        <parallel>
+            <delete dir="${app.server.dir}/server/${jboss.deploy.path}/tmp" failonerror="false"/>
+            <delete dir="${app.server.dir}/server/${jboss.deploy.path}/work" failonerror="false"/>
+            <delete dir="${app.server.dir}/server/${jboss.deploy.path}/data" failonerror="false"/>
+            <delete dir="${app.server.dir}/server/${jboss.deploy.path}/log" failonerror="false"/>
+        </parallel>
+    </target>
+
+
+    <target name="copy-buildtime-configfiles">
+        <record name="copybuildtime.log" action="start"/>
+        <copy todir="${build.base}" overwrite="true" verbose="true">
+            <fileset dir="${buildtime.config.path}"
+                     includes="antLocalSettings.properties antReleaseLocalSettings.properties antGlobalLocalSettings.properties selenium.properties"/>
+        </copy>
+        <copy todir="${build.base}/functionalTests" overwrite="true" verbose="true">
+            <fileset dir="${buildtime.config.path}"
+                     includes="projectLocal.properties"/>
+        </copy>
+        <copy todir="${build.base}/functionalTests/RemoteSelenium" overwrite="true" verbose="true">
+            <fileset dir="${buildtime.config.path}"
+                     includes="projectLocal11.properties projectLocal12.properties"/>
+        </copy>        
+        <copy todir="${build.base}/misc/buildfiles" overwrite="true" verbose="true">
+            <fileset dir="${buildtime.config.path}" includes="custom.properties"/>
+        </copy>
+        <copy todir="${build.base}" overwrite="true" verbose="true">
+            <fileset dir="${buildtime.config.path}" includes="functionalTests/**"/>
+        </copy>
+        <mkdir dir="${build.base}/WEB-INF/classes"/>
+        <copy todir="${build.base}/WEB-INF/classes" overwrite="true" verbose="true">
+            <fileset dir="${buildtime.config.path}" includes="log4j.properties atao.hibernate.cfg.xml"/>
+        </copy>
+        <!-- Start Adding for Assessments build -->
+        <delete>
+            <fileset dir="${build.baseRoot}/assessments" includes="antLocalSettings.properties"/>
+        </delete>
+        <copy todir="${build.baseRoot}/assessments">
+            <fileset dir="${buildtime.config.path}/assessments" includes="antLocalSettings.properties"/>
+        </copy>
+        <copy todir="${build.baseRoot}/assessments/test/artifacts">
+            <fileset dir="${buildtime.config.path}/assessments" includes="test.properties"/>
+        </copy>
+        <record name="copybuildtime.log" action="stop"/>
+        <!-- End Adding for Assessments build -->
+    </target>
+
+
+    <target name="setup-assessmentbuild-number">
+        <copy todir="${build.baseRoot}/assessments">
+            <fileset dir="${buildtime.config.path}/assessments" includes="antLocalSettings.properties"/>
+        </copy>
+        <svnrevget path="${build.baseRoot}/assessments" revisionproperty="assmnt.chkout.revision"/>
+        <echo>Checked-out Revision of Code: ${assmnt.chkout.revision}</echo>
+        <echo>Build number root : ${build.number.root}</echo>
+        <property name="assmnt.build.number" value="${build.number.root}.${assmnt.chkout.revision}.1"/>
+        <echo>set atao.build.number to ${assmnt.build.number} in
+            ${build.baseRoot}/assessments/antLocalSettings.properties
+        </echo>
+        <echo file="${build.baseRoot}/assessments/antLocalSettings.properties" append="true">
+            atao.build.number=${assmnt.build.number}
+        </echo>
+        <property file="${build.baseRoot}/assessments/antLocalSettings.properties"/>
+    </target>
+
+
+    <target name="setup-build-number">
+        <svnrevget path="${build.base}" revisionproperty="chkout.revision"/>
+        <echo>Checked-out Revision of Code: ${chkout.revision}</echo>
+        <echo>Build number root : ${build.number.root}</echo>
+        <property name="atao.build.number" value="${build.number.root}.${chkout.revision}.1"/>
+        <echo>set atao.build.number to ${atao.build.number} in ${build.base}/antGlobalLocalSettings.properties</echo>
+        <replaceregexp file="${build.base}/antGlobalLocalSettings.properties" match="atao.build.number=.*"
+                       replace="atao.build.number=${atao.build.number}" flags="g" byline="true"/>
+        <property file="${build.base}/antGlobalLocalSettings.properties"/>
+    </target>
+
+
+    <target name="set-jboss-deploy-path">
+        <condition property="jboss.deploy.path" value="default">
+            <equals arg1="${ant.java.version}" arg2="1.4"/>
+        </condition>
+        <condition property="jboss.deploy.path" value="production">
+            <equals arg1="${ant.java.version}" arg2="1.5"/>
+        </condition>
+        <condition property="jboss.deploy.path" value="production">
+            <equals arg1="${ant.java.version}" arg2="1.6"/>
+        </condition>
+        <echo message="Java version = ${ant.java.version} so deploy path = server/${jboss.deploy.path}/deploy"/>
+    </target>
+
+
+    <target name="start-jboss43" description="Start the JBoss 4.3 server." depends="cleanout-jboss-generated-files">
+        <echo message="===> java.home value is ${java.home.dir}" level="info"/>
+
+        <available file="antRunAsync.sh" property="antRunAsync.script.present"/>
+        <if>
+            <equals arg1="${antRunAsync.script.present}" arg2="true"/>
+            <then>
+                <fixcrlf srcDir="${basedir}" includes="antRunAsync.sh" eol="lf"/>
+                <chmod file="${basedir}/antRunAsync.sh" perm="ugo+rwx"/>
+
+                <exec executable="${basedir}/antRunAsync.sh" failonerror="yes">
+                    <env key="ANTRUN_NOHUP" value="true"/>
+                    <arg value="run.sh"/>
+                    <arg line=" -b 0.0.0.0"/>
+                    <arg line="-g ${cluster.group}"/>
+                    <arg line="-u ${udp.address}"/>
+                </exec>
+
+                <property name="startup.delay" value="240"/>
+                <echo message="=========> Waiting ${startup.delay} seconds for ${app.server.dir} to start"
+                      level="info"/>
+                <sleep seconds="${startup.delay}"/>
+            </then>
+            <else>
+                <echo message="=========> Didn't find file antRunAsync.sh." level="info"/>
+                <echo message="=========> Can't Start the JBoss 4.3 server." level="info"/>
+                <fail message="JBoss 4.3 server Start-Up failed!"/>
+            </else>
+        </if>
+    </target>
+
+
+    <target name="stop-jboss43" description="Stop the Application Server">
+        <trycatch property="jboss-stop-error" reference="selenium">
+            <try>
+                <!-- see if jboss is running before we try to stop it -->
+                <condition property="isJbossRunning" else="false">
+                    <socket server="${jboss.host}" port="${jboss.jndi.port}"/>
+                </condition>
+                <if>
+                    <equals arg1="${isJbossRunning}" arg2="false"/>
+                    <then>
+                        <echo message="No listener found at ${jboss.host}:${jboss.jndi.port}. Not trying to stop JBoss Server"
+                              level="warning"/>
+                    </then>
+                    <else>
+                        <echo message="===> app.server.dir value is ${app.server.dir}" level="info"/>
+                        <echo message="=========> Stopping JBoss Server at ${jboss.host}:${jboss.jndi.port}"
+                              level="info"/>
+                        <java dir="${app.server.dir}/bin" classname="org.jboss.Shutdown" fork="true">
+                            <arg line="--server=${jboss.host}:${jboss.jndi.port}"/>
+                            <arg value="--user"/>
+                            <arg value="admin"/>
+                            <arg value="--password"/>
+                            <arg value="admin"/>
+                            <classpath>
+                                <pathelement path="${app.server.dir}/bin/shutdown.jar"/>
+                                <pathelement path="${app.server.dir}/client/jbossall-client.jar"/>
+                            </classpath>
+                        </java>
+                        <property name="shutdown.delay" value="35"/>
+                        <echo message="=========> Waiting ${shutdown.delay} seconds for ${app.server.dir} to stop"
+                              level="info"/>
+                        <sleep seconds="${shutdown.delay}"/>
+                    </else>
+                </if>
+            </try>
+            <catch>
+                <echo message="Stop jboss failed.  This may not be an error: ${jboss-stop-error}." level="warning"/>
+            </catch>
+        </trycatch>
+    </target>
+
+
+    <target name="prepare-appserver-for-deployment" depends="set-jboss-deploy-path">
+        <!-- Decide whether to keep a backup of the previous jboss directory (may be safer but takes longer and uses more space) -->
+        <if>
+            <equals arg1="${backup.existing.deployment}" arg2="true"/>
+            <then>
+                <!-- Have to do this in an antcall so atao.build.number won't be
+      set to previous/old value for the remainder of this build -->
+                <antcall target="backup-existing-deployment"/>
+            </then>
+        </if>
+        <!-- Delete previously deployed .ear directory so packaging step
+can create new .ear dir & deploy assets/static there -->
+        <delete dir="${app.server.dir}/server/${jboss.deploy.path}/deploy/atao.ear" failonerror="true"/>
+        <!-- Verify that delete was successful-->
+        <available file="${app.server.dir}/server/${jboss.deploy.path}/deploy/atao.ear"
+                   property="appserver.ear.previous.notDeleted"/>
+        <fail if="appserver.ear.previous.notDeleted" message="Previous deployed appserver ear not deleted"/>
+    </target>
+
+    <target name="unzip-and-package-release">
+        <if>
+            <!--Decide whether to keep a backup of the previous
+   checkout directory (may be safer but uses more space) -->
+            <equals arg1="${keep.build.files}" arg2="true"/>
+            <then>
+                <!-- First delete previous backup workarea -->
+                <delete dir="${package.base}.old" failonerror="false"/>
+                <!-- then move previous workarea to backup -->
+                <move file="${package.base}" tofile="${package.base}.old" failonerror="false"/>
+            </then>
+            <else>
+                <delete dir="${package.base}" failonerror="true"/>
+            </else>
+        </if>
+        <!-- Now create a packageWorkDir -->
+        <mkdir dir="${package.base}"/>
+        <!-- And unzip the release zip into package.base -->
+        <unzip src="${build.base}/relWorkArea/${atao.build.number}.zip" dest="${package.base}"/>
+        <!-- Copy the config files for packaging -->
+        <copy todir="${package.base}" verbose="true" overwrite="true">
+            <fileset dir="${packageinstall.config.path}"
+                     includes="antLocalSettings.properties antPackageLocalSettings.properties"/>
+        </copy>
+        <copy todir="${package.base}/WEB-INF/classes" verbose="true" overwrite="true">
+            <fileset dir="${packageinstall.config.path}" includes="log4j.properties atao.hibernate.cfg.xml"/>
+        </copy>
+        <copy todir="${package.base}/libs" verbose="true" overwrite="true">
+            <fileset dir="${packageinstall.config.path}" includes="atao.hibernate.cfg.xml"/>
+        </copy>
+        <!-- Now run the package.xml to create the atao.ear -->
+        <record name="package-ear-release.log" action="start"/>
+        <ant antfile="${package.base}/package.xml" dir="${package.base}" inheritall="false"
+             target="package-ear-release">
+        </ant>
+        <record name="package-ear-release.log" action="stop"/>
+    </target>
+
+    <target name="deploy-ear" description="Deploy The atao.ear into JBoss Application Server"
+            depends="set-jboss-deploy-path">
+        <record name="deploy-ear.log" action="start"/>
+        <move todir="${app.server.dir}/server/${jboss.deploy.path}/deploy/atao.ear/atao.warDir">
+            <fileset dir="${app.server.dir}/server/${jboss.deploy.path}/deploy/atao.ear/atao.war"/>
+        </move>
+        <unzip src="${package.base}/atao.ear" dest="${app.server.dir}/server/${jboss.deploy.path}/deploy/atao.ear"/>
+        <unzip src="${app.server.dir}/server/${jboss.deploy.path}/deploy/atao.ear/atao.war"
+               dest="${app.server.dir}/server/${jboss.deploy.path}/deploy/atao.ear/atao.warDir"/>
+        <delete file="${app.server.dir}/server/${jboss.deploy.path}/deploy/atao.ear/atao.war"/>
+        <move file="${app.server.dir}/server/${jboss.deploy.path}/deploy/atao.ear/atao.warDir"
+              tofile="${app.server.dir}/server/${jboss.deploy.path}/deploy/atao.ear/atao.war" verbose="true"/>
+        <record name="deploy-ear.log" action="stop"/>
+    </target>
+
+    <target name="copy-runtime-configfiles" depends="set-jboss-deploy-path">
+        <copy todir="${app.server.dir}/server/${jboss.deploy.path}/deploy/atao.ear/atao.war/WEB-INF/classes"
+              overwrite="true" verbose="true">
+            <fileset dir="${runtime.config.path}"
+                     includes="atao.hibernate.cfg.xml custom.properties log4j.properties c3p0.properties"/>
+        </copy>
+    </target>
+
+</project>
+
+
+

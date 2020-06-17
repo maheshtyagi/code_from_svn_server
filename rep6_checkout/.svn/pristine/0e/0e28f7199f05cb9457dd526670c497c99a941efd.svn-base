@@ -1,0 +1,40 @@
+#------------------------------------------------------------------------------------------
+# Package basic settings 
+#------------------------------------------------------------------------------------------
+# what directory did you unzip the release ... 
+package.dir=/home/rebuild/bamboo-home/xml-data/build-dir/YUMAUS-FUNCTESTEAR/packageWorkDir
+# where is the home for ... 
+asset.home=/home/rebuild/jboss43-8180/jboss-as/server/production/deploy/atao.ear/atao.war/assets
+static.home=/home/rebuild/jboss43-8180/jboss-as/server/production/deploy/atao.ear/atao.war/static
+# set these to true if you want to skip
+ignore.assets=false
+ignore.static=false
+
+
+#------------------------------------------------------------------------------------------
+# Contidtionals: false means delete
+#------------------------------------------------------------------------------------------
+keep.build.files=true
+
+#------------------------------------------------------------------------------------------ 
+# Installation Properties ... properties that are replaced in template files
+#------------------------------------------------------------------------------------------ 
+# Installation Files to process - these are assumed to be in classes
+# N.B   : multiserver-ehcache.xml not done
+#       : treecache.xml not done either 
+# Installation Properties
+#------------------------------------------------------------------------------------------ 
+#app.server.install.dir=/home/rebuild/jboss43-8180/jboss-as
+app.server.dir=/home/rebuild/jboss43-8180/jboss-as
+db.url=eng-habitation.us.kronos.com:1521:DEVHMC
+db.username=neo_au
+db.password=neo_au
+asset.file.dir=/home/rebuild/jboss43-8180/jboss-as/server/production/deploy/atao.ear/atao.war/static
+asset.dir=/home/rebuild/jboss43-8180/jboss-as/server/production/deploy/atao.ear/atao.war/assets
+jboss.home=/home/rebuild/jboss43-8180/jboss-as
+contextroot=/
+jndi.proto.host.port=localhost:1100
+smtp.server.host=mailhost.deploy.com
+smtp.server.port=25
+to.recipients=dev-pepp-oljb@mailhost.deploy.com
+

@@ -1,0 +1,35 @@
+target.db=TRUNK9LONG
+svn.branch=svn+ssh://it-apps-4.corp.unicru.com/svnroot/repositories/trunk
+
+build.baseRoot=${bamboo.build.dir}/checkout
+global.config.path=${bamboo.build.dir}/localConfigFiles
+svn.checkout.url=${svn.branch}/atao
+CIfrom.revision=HEAD
+svn.db.checkout.url=${svn.branch}/db
+db.from.revision=${CIfrom.revision}
+svn.ASSMNTcheckout.url=svn+ssh://it-apps-4.corp.unicru.com/svnroot/repository4/trunk/assessments
+ASSMNTfrom.revision=HEAD
+svn.help.checkout.url=${svn.branch}/help
+help.from.revision=HEAD
+build.number.root=9.0.104.0
+keep.build.files=false
+backup.existing.deployment=false
+udp.address=230.0.0.91
+cluster.group=kapuslbam108080
+db.tnsname=kdbushsgeld01
+jboss.http.port=8080
+jboss.jndi.port=1099
+upgrade.sql=8_6_Schema_Upgrade.sql
+cleanup.sql=table_cleanup.sql
+clover.coverage=true
+
+#Properties for removing build activity
+#no.checkoutcompile.build=1
+#no.deploy.build=1
+#no.se.build=1
+no.junit.build=1
+#no.clover.report=1
+#SE agent property files
+selenium.agent1=projectLocal20.properties
+selenium.agent2=projectLocal21.properties
+

@@ -1,0 +1,8 @@
+#hub
+hub=pap-rgrid1a.corp.unicru.com
+seleniumJar=selenium-server-standalone-2.46.0.jar
+hubPort=7171
+roleHub=hub
+roleAgent=node
+maxMemory=4096m
+hub.memory=8192m

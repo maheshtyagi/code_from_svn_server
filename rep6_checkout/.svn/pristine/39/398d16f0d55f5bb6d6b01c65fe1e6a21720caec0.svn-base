@@ -1,0 +1,29 @@
+java.home=${env.JAVA_HOME}
+jboss.home=${env.JBOSS_HOME}
+#jboss.home=/home/ataoci45/jboss/jboss-as
+
+# The user who owns this install
+atao.username=atao_qa2
+
+# The jboss server IP or name
+#application.server=dev-ftp
+application.server=it-peace.corp.unicru.com
+bom.verify.notification="ataoAlerts@cadienttalent.com"
+
+
+# Jboss boot log parameters
+jboss.partition.udpGroup=230.0.0.228
+bind.address=kws-us-bomvsr1.corp.unicru.com
+jboss.server.home.dir=${jboss.home}/standalone/deployments
+jboss.partition.name=kws-us-bomvsr18080
+jboss.jndi.port=1099
+
+# antBomInstallCommonSettings parameters
+target.db.alias=atao_qa2
+target.db=ATAO_QA2_impex
+jboss.port=8080
+jvm.max.mem=1536M
+database.sid=orclqa2
+
+# Misc helpful parameters
+#cwd=/home/ataoci45/bamboo-agent-home/xml-data/build-dir/BOMV-BOMI-JOB1

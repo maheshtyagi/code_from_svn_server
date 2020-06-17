@@ -1,0 +1,48 @@
+#############################################################################
+#Atao Custom Properties
+#############################################################################
+${target.db}.atao.persist.jdbc.driver=oracle.jdbc.driver.OracleDriver
+${target.db}.atao.persist.jdbc.url=jdbc:oracle:thin:@kdb-us-hsgeld01.us.kronos.com:1521:bvteng
+${target.db}.atao.persist.jdbc.user=${target.db}
+${target.db}.atao.persist.jdbc.pass=${target.db}
+${target.db}.hibernate.dialect=org.hibernate.dialect.Oracle9Dialect
+${target.db}.atao.assets=${bamboo.build.dir}/checkout/atao/assets
+${target.db}.atao.db.type=Oracle
+
+atao.assets=${bamboo.build.dir}/checkout/atao/assets
+atao.assets.files=assets/applications
+atao.assets.pdfs=${bamboo.build.dir}/checkout/atao/applications/hmc/form
+
+atao.persist.logical.db=${target.db}
+
+
+atao.jibx.db_expimplog.enable=false
+
+
+#############################################################################
+# Hibernate properties
+#############################################################################
+
+atao.virtualAssetPath=/assets
+
+###for c3po connection caching
+hibernate.cache.use_query_cache=true
+hibernate.c3p0.idle_test_period=1800
+hibernate.c3p0.timeout=1800
+hibernate.c3p0.max_size=300
+hibernate.c3p0.min_size=50
+hibernate.c3p0.max_statements=0
+
+hibernate.max_fetch_depth=3
+
+SystemVariable.EditableLibTypes=0,1,2
+
+#atao.import.clientImport.create.dbSequence=$JBOSS_HOME$/server/default/deploy/ci.ear/ci.war/misc/sqlscripts/atao_seqfinder.sql
+
+no.junit.build=1
+
+atao.import.deleteLibraries=true
+
+#This is needed so that the CI Build uses svn db folder instead of zips
+atao.importexport.zip=false
+SystemVariable.XssSanitizationEnable=true

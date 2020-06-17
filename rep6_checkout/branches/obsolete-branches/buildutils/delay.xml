@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+
+<project name="delay" default="timed-delay" basedir=".">
+
+    <!-- Provide a default value (this should normally be overridden when this is invoked) -->
+    <property name="delay.seconds" value="3"/>
+
+    <target name="timed-delay" description="Sleep for a predetermined number of seconds">
+        <sleep seconds="${delay.seconds}"/>
+    </target>
+
+</project>

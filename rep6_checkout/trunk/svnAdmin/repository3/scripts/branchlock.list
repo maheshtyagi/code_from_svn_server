@@ -1,0 +1,11 @@
+
+# IMPORTANT!  Entries for locked branches must not have any leading or trailing spaces.
+#             This is so the regexp in the validation script can accurately match only
+#             the exact branchname and not have any false positives.
+#             For example, "LATEST_ATREIDES" should not match "LATEST_ATREIDES_PROD",
+#             so the regexp will look for "^LATEST_ATREIDES$".  Any leading/trailing
+#             characters (including spaces) will break this.
+
+### Locked permanently
+#trunk
+

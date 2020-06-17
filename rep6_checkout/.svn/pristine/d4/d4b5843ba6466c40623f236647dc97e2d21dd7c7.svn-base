@@ -1,0 +1,186 @@
+<?xml version="1.0"?>
+<project name="self-service-tools" default="branch-create" basedir=".">
+  
+    <property name="src" value="svn+ssh://kap-us-hsgsvn.us.kronos.com/svnroot/repositories/trunk"/>
+    <property name="copy.base" value="svn+ssh://kap-us-hsgsvn.us.kronos.com/svnroot/repositories/branches"/>
+    <property name="user" value="rebuild"/>
+    <property name="password" value="Rb20081216"/>
+    <import file="commonUtil.xml"/>
+
+
+   <target name="export-local-configs" description="Get env-specific configs from repository">
+
+         <svn>
+           <export srcUrl="${svn.localprops.export.url}"  destPath="."  force ="true"/>
+        </svn>
+
+        <!-- bamboo.build.dir will be manually substituted in all repo6 files -->
+        <!-- below this directory before the build is started. -->
+        <!-- in case this is run on windows, make all slashes forward -->
+
+      
+        <pathconvert targetos="unix" property="bamboo.build.dir">
+                <path location="${basedir}"/>
+        </pathconvert>
+
+
+        <replace dir="." value="${bamboo.build.dir}">
+                <include name="localConfigFiles/**/*.properties*"/>
+                <include name="localEarBuild.properties"/>
+                <replacetoken>${bamboo.build.dir}</replacetoken>
+        </replace>
+
+        <replace dir="." value="${branch}">
+                 <include name="localEarBuild.properties"/>
+                <replacetoken>${branch}</replacetoken>
+        </replace>
+
+
+
+        <!-- target.db is replaced just below here and set in -->
+        <!-- localEarBuild.properties from repo6 -->
+        <property file="localEarBuild.properties"/>
+
+        <replace dir="." value="${target.db}">
+                <include name="localConfigFiles/**/*.*"/>
+                <replacetoken>${target.db}</replacetoken>
+        </replace>
+
+        <!-- jbosss.home is replaced just below here -->
+        <replace dir="." value="${jboss.home}">
+                <include name="localConfigFiles/**/*.*"/>
+                <replacetoken>${jboss.home}</replacetoken>
+        </replace>
+
+
+       <!-- Read in local properties-->
+        <property name="build.base" value="${build.baseRoot}/atao"/>
+        <property file="./localConfigFiles/buildAndRelease/antLocalSettings.properties"/>
+        <property file="./localConfigFiles/buildAndRelease/assessments/antLocalSettings.properties"/>
+        <property file="./localConfigFiles/buildAndRelease/projectLocal.properties"/>
+
+        <property name="buildtime.config.path" value="${global.config.path}/buildAndRelease"/>
+
+        <!-- Added a new property called selenium.config.path for the selenium related config files -->
+        <property name="selenium.config.path" value="${global.config.path}/selenium"/>
+        <property name="ctt.config.path" value="${global.config.path}/cttframework"/>
+        <property name="packageinstall.config.path" value="${global.config.path}/packageAndInstall"/>
+        <property name="package.base" value="${basedir}/packageWorkDir"/>
+        <property name="runtime.config.path" value="${global.config.path}/runtime"/>
+    </target>
+
+
+    <target name="verify.param">
+
+    <if>
+    <bool>
+        <and>
+            <isset property="frevision"/>
+            <not>
+                <equals arg1="${frevision}" arg2="" />
+            </not>
+        </and>
+    </bool>
+    <then>
+    </then>
+     <else>
+       <fail message="Property &quot;frevision&quot; needs to be set and cannot be null"/>
+     </else>
+   </if>
+
+   <if>
+    <bool>
+        <and>
+            <isset property="branch"/>
+            <not>
+                <equals arg1="${branch}" arg2="" />
+            </not>
+        </and>
+    </bool>
+    <then>
+    </then>
+     <else>
+       <fail message="Property &quot;branch&quot; needs to be set and cannot be null"/>
+     </else>
+   </if>
+
+
+  </target>
+
+    <target name="delete-branch">
+     <property name="delete-message"  value="${jira}:Deleting the branch ${branch}"/>
+     <echo message="${delete-message}"/>
+
+    <trycatch property="delete-branch-error">
+      <try>
+      	<java classname="org.tmatesoft.svn.cli.SVN" failonerror="false">
+          <arg value="--non-interactive"/>
+          <arg value="--username"/>
+          <arg value="${user}"/>
+          <arg value="--password"/>
+          <arg value="${password}"/>
+          <arg value="delete" />
+          <arg value="-m"/>
+          <arg value="${delete-message}"/>
+          <arg value="${copy.base}/${branch}" />
+            <classpath>
+              <pathelement location="${ant.home}/lib/ganymed.jar" />
+              <pathelement location="${ant.home}/lib/svnkit-1.7.5-v1.jar" />
+              <pathelement location="${ant.home}/lib/svnkit-cli-1.7.5-v1.jar" />
+              <pathelement location="${ant.home}/lib/sequence-library-1.0.2.jar"/>
+              <pathelement location="${ant.home}/lib/sqljet-1.1.4.jar"/>
+              <pathelement location="${ant.home}/lib/trilead-ssh2-1.0.0-build215.jar"/>
+            </classpath>
+         </java>
+       </try>
+       <catch>
+          <echo message="Delete branch failed . This may not be an error: ${delete-branch-error}." level="warning"/>
+      </catch>
+     </trycatch>
+
+    </target>
+
+     <target name="branch-create-new-db" depends="verify.param,delete-branch">
+
+        <property name="message" value="${jira}:Branch created ${branch} created by the tool from revision ${frevision} of the trunk"/>
+        <echo message="${message}"/>
+        <trycatch property="create-branch-error">
+         <try>
+        	<java classname="org.tmatesoft.svn.cli.SVN" failonerror="true"> 
+          	<arg value="--non-interactive"/>
+          	<arg value="--username"/>
+          	<arg value="${user}"/>
+          	<arg value="--password"/>
+          	<arg value="${password}"/>
+          	<arg value="copy" />
+          	<arg value="--revision"/>
+          	<arg value="${frevision}"/>
+          	<arg value="-m"/>
+          	<arg value="${message}"/>
+          	<arg value="${src}"/> 
+          	<arg value="${copy.base}/${branch}" />
+            <classpath>
+              <pathelement location="${ant.home}/lib/ganymed.jar" />
+              <pathelement location="${ant.home}/lib/svnkit-1.7.5-v1.jar" />
+              <pathelement location="${ant.home}/lib/svnkit-cli-1.7.5-v1.jar" />
+              <pathelement location="${ant.home}/lib/sequence-library-1.0.2.jar"/>
+              <pathelement location="${ant.home}/lib/sqljet-1.1.4.jar"/>
+              <pathelement location="${ant.home}/lib/trilead-ssh2-1.0.0-build215.jar"/>
+            </classpath>
+         </java>
+        </try>
+        <catch>
+           <echo message="Create branch failed . This may  be an error: ${create-branch-error}." level="error"/>
+       </catch>
+       </trycatch>
+
+        <record name="branch-create-new-db.log" action="start"/>
+            <ant antfile="build-atao-db.xml" dir="${basedir}">
+                <target name="new-db-from-filesystem"/>
+            </ant>
+        <record name="branch-create-new-db.log" action="stop"/>
+
+      </target>
+
+</project>
+

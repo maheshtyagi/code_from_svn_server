@@ -1,0 +1,58 @@
+### override these ###
+# where did you check out?
+eng.root=/export/home/rebuild/bamboo-home/xml-data/build-dir/CEPOST85SR8-FUNCTESTEAR/checkout/atao
+mx.context=wwwroot
+
+# Used by HTTPUnit
+
+# needed for deploy-developer
+application.root=/export/home/rebuild/bamboo-home/xml-data/build-dir/CEPOST85SR8-FUNCTESTEAR/checkout/atao
+jboss.root=/export/home/rebuild/bamboo-home/xml-data/build-dir/CEPOST85SR8-FUNCTESTEAR/jboss43-8280-buildArea
+
+# Used by HTTPUnit and CFUnit
+test.server=http://localhost:8280/
+
+#Needed to deploy-undeploy wsdd
+webservice.location=http://localhost:8280/atao/services
+
+# ear generation settings
+ear.root=/export/home/rebuild/bamboo-home/xml-data/build-dir/CEPOST85SR8-FUNCTESTEAR/checkout
+ear.name=atao.ear
+war.name=atao.war
+tests.include.exclude=include
+ear.excludes.libraries=true
+ear.excludes.help=true
+
+# Used by emma
+coverage.enabled=true
+
+# include stubs in ear
+tests.include.exclude=include
+
+target.db=CEPOST85
+
+#Uncomment to export all files
+#ignore.export.all=true
+
+#Location from which your custom.properties file will be copied
+my.custom.properties.home=/export/home/rebuild/bamboo-home/xml-data/build-dir/CEPOST85SR8-FUNCTESTEAR/localConfigFiles/buildAndRelease
+jibxclasspath=outputclasspath
+
+# -------------------------------------------------------------------------------------------
+# used for file naming, database specific stuff
+# -------------------------------------------------------------------------------------------
+atao.db.type=oracle
+atao.db.gen.delimiter=;
+
+### override these ###
+
+# For WebTest
+webtest.contextPath=
+
+# Adding this override per Vikas, for Delete Client webtest
+webtest.importtest.file=/export/home/rebuild/bamboo-home/xml-data/build-dir/CEPOST85SR8-FUNCTESTEAR/checkout/atao/misc/exports/clientData/InitialGoLiveClient.zip
+
+#Adding in attempt to get initial build to pass
+#library.list=core,SystemConfiguration,HCOM,ca,caUK,Salary,SalaryExternal,PostingAdmin,admin,hmcadmin,SalaryInternal,BaselineScript,UnitTest,DomainTests,eQuest,SalaryInternalSSO,Developer,Hourly,SIDeveloper,ATS,reqLite,reqLiteHMC,PostingNav,HMC,HourlyInternal,Onboarding,mgrOnboarding,SystemConfig-Dev,SystemConfig-UnitTest,HourlyCanada,HourlyUK,caCanada,OnboardingCanada,OnboardingUK,choicePoint,Assessment,deploysolutions,deploysolutions_enduser,kronos,kronos_enduser,UnitTestMultiLocation,UnitTestMaple,UnitTestHourlyCanada,UnitTestRAT,IntegrationADPWOTC,IntegrationAIDrugCheck,IntegrationNewHire,IntegrationEADF,IntegrationNewHireDocuments,IntegrationUSISBackgroundCheck,BaselineFieldMappings,LegacyFieldMappings,BaselineCollectionMappings,BaselineScriptResponseMappings,BaselineForms,IntegrationEmployeeImport,IntegrationFADVITaxWOTC,IntegrationHRPlusBackgroundCheck,IntegrationLocationImport,IntegrationNonHireImport,IntegrationPremierBackgroundCheck,IntegrationTALXWOTC,IntegrationFADVBackgroundCheck,IntegrationDataTemplate,IntegrationPremierDrugCheck,IntegrationAcxiomBGCheck,KTMDBaseClient,KTMDBaseClient_Canada,KTMDBaseClient_CIBranding,KTMDBaseClientempOnboarding_enduser,KTMDBaseClient_enduser,KTMDBaseClientHMC,KTMDBaseClientHMCBranding,KTMDBaseClientHMC_enduser,KTMDBaseClientKTMDBaseClientUKNonReqExternalSeeker,KTMDBaseClientKTMDBaseClientUKNonReqExternalSeeker_enduser,KTMDBaseClientKTMDBaseClientUKNonReqInternalSeeker,KTMDBaseClientKTMDBaseClientUKNonReqInternalSeeker_enduser,KTMDBaseClientKTMDBaseClientUKReqExternalSeeker_en,KTMDBaseClientKTMDBaseClientUKReqExternalSeeker_enduser,KTMDBaseClientKTMDBaseClientUKReqInternalSeeker_en,KTMDBaseClientKTMDBaseClientUKReqInternalSeeker_enduser,KTMDBaseClientmanagerOnboarding_enduser,KTMDBaseClientNonReq,KTMDBaseClientNonReqExternal,KTMDBaseClientNonReqInternal,KTMDBaseClientNonReqInternal_enduser,KTMDBaseClient_Req,KTMDBaseClientReqExternal,KTMDBaseClientReqExternal_enduser,KTMDBaseClientReqInternal,KTMDBaseClientReqInternal_enduser,KTMDBaseClientReqLiteTools_enduser,KTMDBaseClient_UK,KTMDBaseClientNonReqExternal_enduser,KTMDBaseClientmanagerOnboarding,KTMDBaseClientempOnboardingUK,KTMDBaseClientmanagerOnboardingUK,KTMDBaseClientempOnboardingCanada,KTMDBaseClientmanagerOnboardingCanada,KTMDBaseClientempOnboardingUK_enduser,KTMDBaseClientmanagerOnboardingUK_enduser,KTMDBaseClientempOnboardingCanada_enduser,KTMDBaseClientmanagerOnboardingCanada_enduser,SystemConfigAndMore,UnitTestSalarySSN,IntegrationRedirectToVendor,IntegrationBSIBackgroundCheck,IntegrationPositionKeyImport,IntegrationLocationExport,IntegrationJobImport,AdditionalForms,iTax,IntegrationMaximusWOTC
+#client.list=bootstrap,Baseline Script Test,Unit Test Client,Kronos,Domain Tests,KTMD Assessments,KTMD Base Client
+#client.library.list=InitialGoLiveClient#InitialGoLiveClient:InitialGoLiveClient_enduser,Tech Corp#TechCorp:TechCorp_CIBranding:TechCorp_enduser:TechCorpTechCorpdsiCA_enduser:TechCorpTechCorpDSIHourly_enduser:TechCorpTechCorpDSIHourlyInternal_enduser:TechCorpTechCorpdsiRAT_enduser:TechCorpTechCorpempOnboarding_enduser:TechCorpTechCorpempResignOnboarding_enduser:TechCorpTechCorpHMCDSI_enduser:TechCorpTechCorpmanagerOnboarding_enduser:TechCorpTechCorpmanagerResignOnboarding_enduser

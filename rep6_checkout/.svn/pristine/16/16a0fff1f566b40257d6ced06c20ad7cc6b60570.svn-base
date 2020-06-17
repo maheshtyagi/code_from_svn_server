@@ -1,0 +1,130 @@
+#
+# ---------------------------------------
+# This is used for the database name
+# ---------------------------------------
+
+
+#target.db=${branch}
+#svn.branch=svn://it-apps-4.corp.unicru.com/repositories/branches/${branch}
+
+target.db=${branch}
+svn.branch=svn+ssh://it-apps-4.corp.unicru.com/svnroot/repositories/branches/${branch}
+
+#target.db=V90SR6Pioneers
+#svn.branch=svn://it-apps-4.corp.unicru.com/repositories/branches/V90SR6Pioneers
+
+#target.db=V91Pioneers
+#svn.branch=svn://it-apps-4.corp.unicru.com/repositories/branches/V91Pioneers
+
+#target.db=V91CMSST
+#svn.branch=svn://it-apps-4.corp.unicru.com/repositories/branches/V91CMSST
+
+#target.db=V90DBF_HBM_DEV
+#svn.branch=svn://it-apps-4.corp.unicru.com/repositories/branches/V90DBF_HBM_DEV
+
+#target.db=V90SR1Project
+#svn.branch=svn://it-apps-4.corp.unicru.com/repositories/branches/V90SR1Project
+
+#target.db=V88SR4project
+#svn.branch=svn://it-apps-4.corp.unicru.com/repositories/branches/V88SR4project
+
+#target.db=V88SR3HOTFIXES
+#svn.branch=svn://it-apps-4.corp.unicru.com/repositories/branches/V88SR3HOTFIXES
+
+#target.db=TRUNK9_TEST
+#svn.branch=svn://it-apps-4.corp.unicru.com/repositories/trunk
+
+#target.db=V91Pioneers
+#svn.branch=svn://it-apps-4.corp.unicru.com/repositories/branches/V91Pioneers
+
+#target.db=V88SR3Spectrum
+#svn.branch=svn://it-apps-4.corp.unicru.com/repositories/branches/V88SR3Spectrum
+
+#target.db=V88SR4HOTFIXES
+#svn.branch=svn://it-apps-4.corp.unicru.com/repositories/branches/V88SR4HOTFIXES
+
+#target.db=V90SR17HOTFIXES2
+#svn.branch=svn://it-apps-4.corp.unicru.com/repositories/branches/V90SR17HOTFIXES2
+
+
+#target.db=V90SR20HOTFIXES
+#svn.branch=svn://it-apps-4.corp.unicru.com/repositories/branches/V90SR20HOTFIXES
+
+#target.db=Mobileview
+#svn.branch=svn://it-apps-4.corp.unicru.com/repositories/branches/91Mobileview
+
+#target.db=V90DBFraggersNew
+#svn.branch=svn://it-apps-4.corp.unicru.com/repositories/branches/V90DBFraggersNew
+
+#target.db=V90SR5HOTFIXES
+#svn.branch=svn://it-apps-4.corp.unicru.com/repositories/branches/V90SR5HOTFIXES
+
+#target.db=V90SR18HOTFIXES
+#svn.branch=svn://it-apps-4.corp.unicru.com/repositories/branches/V90SR18HOTFIXES
+
+#Modify the below properties for taking export of the DB.
+#The details below are for staging the dB export on the dev ftp server.
+
+#atao.db.stage.host=kap-us-devftp.us.kronos.com
+atao.db.stage.host=it-peace.corp.unicru.com
+atao.db.dump.location=/export/data/dev-ftp/azetra/keep1week/
+atao.db.stage.notification="ataoalerts@cadienttalent.com"
+donot.notify="false"
+atao.db.stage.account=azetra
+atao.db.stage.password=azetra123
+
+# for new DB creation
+new.db.url=jdbc:oracle:thin:@kdb-us-hsgeld01.corp.unicru.com:1521:bvteng
+new.db.user=${target.db}
+new.db.tablespace=CI_DATA
+dba.user=engauto
+dba.pass=engauto
+#----------------------------------------
+# Atao Product Version info
+#----------------------------------------
+atao.major=9
+atao.minor=0
+atao.service=99
+atao.patch=0
+product.version=${atao.major}.${atao.minor}
+atao.version=${atao.major}.${atao.minor}.${atao.service}.${atao.patch}
+atao.release=${atao.major}.${atao.minor}
+build.number.root=${product.version}.${atao.service}
+#WHY ARE WE HARD CODING THIS ANYMORE??? Not sure why the below build number is being used.
+#build.number.root=${product.version}.0
+bom.file.name=misc/boms/${product.version}_SR${atao.service}_Bom.xml
+#bom.file.name=misc/boms/BOM_${product.version}_SR${atao.service}.xml
+#bom.file.name=misc/boms/BOM_8.7_SR${atao.service.release}.xml
+
+build.baseRoot=${bamboo.build.dir}/checkout
+global.config.path=${bamboo.build.dir}/localConfigFiles
+svn.checkout.url=${svn.branch}/atao
+CIfrom.revision=HEAD
+svn.db.checkout.url=${svn.branch}/db
+db.from.revision=${CIfrom.revision}
+svn.ASSMNTcheckout.url=svn+ssh://it-apps-4.corp.unicru.com/svnroot/repository4/trunk/assessments
+#svn.ASSMNTcheckout.url=svn://it-apps-4.corp.unicru.com/repository4/trunk/assessments
+ASSMNTfrom.revision=HEAD
+# use revions for assessment from before 88sr2 because of changed lib name
+#ASSMNTfrom.revision=3402
+#ASSMNTfrom.revision=3410
+svn.help.checkout.url=${svn.branch}/help
+help.from.revision=HEAD
+db.tnsname=kdbushsgeld01
+keep.build.files=false
+# not used?
+build.number.iteration=0
+
+# Include assessment jars every time in bom per Mayank new bom creation processs. So always keep the below property un-commented.
+ASSMNT.build=true
+
+# For automatic update of rev numbers in .jar names in BOM file
+atao.jar.list=applications,core,integration,ldap,services,taglibs,tools,webservices,workflow,model-common,model-core,model-tmd-apps
+assessment.jar.list=api,impl,model
+
+# for automatic update of BOM and short build plans
+svn.bomprops.checkout.url=svn+ssh://it-apps-4.corp.unicru.com/svnroot/repository6/branches/TEST_HF_BOM/ataoTools
+svn.shortprops.checkout.url=svn+ssh://it-apps-4.corp.unicru.com/svnroot/repository6/branches/TEST_CIBUILD/ataoTools
+
+parallelize.import-all=true
+

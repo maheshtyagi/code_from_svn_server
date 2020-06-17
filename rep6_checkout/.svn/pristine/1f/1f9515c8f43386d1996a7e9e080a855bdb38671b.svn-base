@@ -1,0 +1,50 @@
+### override these ###
+# where did you check out?
+eng.root=/export/home/rebuild/bamboo-home/xml-data/build-dir/CEPOST85SR8-FUNCTESTEAR/checkout/atao
+coldfusion.root=/opt/coldfusionmx7
+mx.context=wwwroot
+
+# Used by HTTPUnit
+coldfusion.service=ColdFusion MX 7 Application Server
+coldfusion.startDelay.sec=10
+
+# needed for deploy-developer
+application.root=/export/home/rebuild/bamboo-home/xml-data/build-dir/CEPOST85SR8-FUNCTESTEAR/checkout/atao
+jboss.root=${env.JBOSS_HOME}
+
+# Used by HTTPUnit and CFUnit
+test.server=http://localhost:8280/
+
+#Needed to deploy-undeploy wsdd
+webservice.location=http://localhost:8280/atao/services
+
+# ear generation settings
+#cfusion_ear.location=c:/cfusion.ear
+ear.root=/export/home/rebuild/bamboo-home/xml-data/build-dir/CEPOST85SR8-FUNCTESTEAR/checkout
+ear.name=atao.ear
+war.name=atao.war
+tests.include.exclude=include
+ear.excludes.libraries=true
+ear.excludes.help=true
+
+# include stubs in ear
+tests.include.exclude=include
+
+# Used by CFUnit
+coldfusion.server.protocol=http://
+
+#Uncomment to export all files
+#ignore.export.all=true
+
+#Location from which your custom.properties file will be copied
+#my.custom.properties.home=/export/home/rebuild/localConfigFiles
+
+
+# -------------------------------------------------------------------------------------------
+# used for file naming, database specific stuff
+# -------------------------------------------------------------------------------------------
+atao.db.type=oracle
+atao.db.gen.delimiter=;
+
+
+### override these ###

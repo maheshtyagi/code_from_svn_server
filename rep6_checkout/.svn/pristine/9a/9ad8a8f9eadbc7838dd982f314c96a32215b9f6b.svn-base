@@ -1,0 +1,44 @@
+### override these ###
+# where did you check out?
+eng.root=D:/bamboo-home/xml-data/build-dir/PERF-SHORT
+install.dir=${eng.root}/output
+
+# For DB details used while exporting all libraries
+target.db=perf3canonical
+
+# For JBoss Deployment
+application.root=D:/bamboo-home/xml-data/build-dir/PERF-SHORT
+jboss.root=D:/bamboo-home/xml-data/build-dir/PERF-SHORT/jboss
+tomcat.container=jbossweb-tomcat55.sar
+
+# Used by HTTPUnit
+
+# Used by HTTPUnit and CFUnit
+
+
+# -------------------------------------------------------------------------------------------
+# used for file naming, database specific stuff
+# -------------------------------------------------------------------------------------------
+atao.db.type=oracle
+atao.db.gen.delimiter=;
+
+ear.root=.
+ear.name=ci.ear
+war.name=ci.war
+
+coverage.enabled=true
+
+my.custom.properties.home=D:\\bamboo-home\\xml-data\\build-dir\\PERF-SHORT\\misc\\buildfiles
+
+jibxclasspath=outputjibxclasspath
+# Since building against new database, had to remove: Deploy Solutions
+client.list=bootstrap,Baseline Script Test,Unit Test Client,Kronos,Domain Tests,KTMD Assessments,KTMD Base Client
+# Since building against new database, had to remove entire client.library.list
+client.library.list=InitialGoLiveClient#InitialGoLiveClient:InitialGoLiveClient_enduser
+
+
+### override these ###
+
+# Since building against new database, had to remove: UnitTest,DomainTests,SystemConfig-UnitTest,deploysolutions,deploysolutions_enduser,UnitTestMultiLocation,UnitTestMaple,UnitTestHourlyCanada,UnitTestRAT,UnitTestSalarySSN,
+#library.list=core,SystemConfiguration,HCOM,ca,caUK,Salary,SalaryExternal,PostingAdmin,admin,hmcadmin,SalaryInternal,BaselineScript,eQuest,SalaryInternalSSO,Developer,Hourly,SIDeveloper,ATS,reqLite,reqLiteHMC,PostingNav,HMC,HourlyInternal,Onboarding,mgrOnboarding,SystemConfig-Dev,HourlyCanada,HourlyUK,caCanada,OnboardingCanada,OnboardingUK,choicePoint,Assessment,kronos,kronos_enduser,IntegrationADPWOTC,IntegrationAIDrugCheck,IntegrationNewHire,IntegrationEADF,IntegrationNewHireDocuments,IntegrationUSISBackgroundCheck,BaselineFieldMappings,LegacyFieldMappings,BaselineCollectionMappings,BaselineScriptResponseMappings,BaselineForms,IntegrationEmployeeImport,IntegrationFADVITaxWOTC,IntegrationHRPlusBackgroundCheck,IntegrationLocationImport,IntegrationNonHireImport,IntegrationPremierBackgroundCheck,IntegrationTALXWOTC,IntegrationFADVBackgroundCheck,IntegrationDataTemplate,IntegrationPremierDrugCheck,IntegrationAcxiomBGCheck,KTMDBaseClient,KTMDBaseClient_Canada,KTMDBaseClient_CIBranding,KTMDBaseClientempOnboarding_enduser,KTMDBaseClient_enduser,KTMDBaseClientHMC,KTMDBaseClientHMCBranding,KTMDBaseClientHMC_enduser,KTMDBaseClientKTMDBaseClientUKNonReqExternalSeeker,KTMDBaseClientKTMDBaseClientUKNonReqExternalSeeker_enduser,KTMDBaseClientKTMDBaseClientUKNonReqInternalSeeker,KTMDBaseClientKTMDBaseClientUKNonReqInternalSeeker_enduser,KTMDBaseClientKTMDBaseClientUKReqExternalSeeker_en,KTMDBaseClientKTMDBaseClientUKReqExternalSeeker_enduser,KTMDBaseClientKTMDBaseClientUKReqInternalSeeker_en,KTMDBaseClientKTMDBaseClientUKReqInternalSeeker_enduser,KTMDBaseClientmanagerOnboarding_enduser,KTMDBaseClientNonReq,KTMDBaseClientNonReqExternal,KTMDBaseClientNonReqInternal,KTMDBaseClientNonReqInternal_enduser,KTMDBaseClient_Req,KTMDBaseClientReqExternal,KTMDBaseClientReqExternal_enduser,KTMDBaseClientReqInternal,KTMDBaseClientReqInternal_enduser,KTMDBaseClientReqLiteTools_enduser,KTMDBaseClient_UK,KTMDBaseClientNonReqExternal_enduser,KTMDBaseClientmanagerOnboarding,KTMDBaseClientempOnboardingUK,KTMDBaseClientmanagerOnboardingUK,KTMDBaseClientempOnboardingCanada,KTMDBaseClientmanagerOnboardingCanada,KTMDBaseClientempOnboardingUK_enduser,KTMDBaseClientmanagerOnboardingUK_enduser,KTMDBaseClientempOnboardingCanada_enduser,KTMDBaseClientmanagerOnboardingCanada_enduser,SystemConfigAndMore,IntegrationRedirectToVendor,IntegrationBSIBackgroundCheck,IntegrationPositionKeyImport,IntegrationLocationExport,IntegrationJobImport,AdditionalForms,iTax,IntegrationMaximusWOTC
+

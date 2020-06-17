@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<!DOCTYPE project SYSTEM "config/MyWebTest.dtd">
+
+<project name="SanityTest" default="suite" basedir=".">
+	
+<target name="suite" depends="testSanity"/>
+
+
+    <target name="testSanity">
+      <webtest name="testSanity">
+           &sharedConfiguration;
+           
+           <steps>
+            <!--Admin Tools -->
+		<invoke url="http://ki-ce-app2.in.kronos.com:8080/applications/ca/ear-index.html"/>
+		<clickLink label="Administrative Tools"/>
+		<setInputField name="username" value="admin"/>
+		<setInputField forLabel="Password:" value="Idaho0806"/>
+		<clickLink label="Sign In"/>
+		<clickLink label="User Tool"/>
+		<clickLink label="Welcome!"/>
+		<clickLink label="Role Tool"/>
+		<clickLink label="Welcome!"/>
+		<clickLink label="Logout"/>		
+	    
+	   
+	    <!--HMC-->
+		<invoke url="http://ki-ce-app2.in.kronos.com:8080/index.jsp?applicationName=dsiRAT"/>
+		<setInputField name="username" value="deploy"/>
+		<setInputField forLabel="Password:" value="123456"/>
+		<clickLink label="Login >"/>
+		<verifyTitle text="Kronos Hiring Management Console"/>
+		<clickLink label="All Applicants"/>
+		<setSelectField name="showDays" text="Last 30 Days"/>
+		<setSelectField forLabel="Application Date:" text="Last 30 Days"/>
+		<clickLink label="Refine"/>
+		<clickLink label="Sign Out"/>
+		
+	     <!--Salaried External site -->
+		<invoke url="http://ki-ce-app2.in.kronos.com:8080/index.jsp?applicationName=dsiCA"/>
+		<clickLink label="Home"/>
+		<verifyTitle text="Welcome to Kronos Careers"/>
+		<clickLink label="Job Search"/>
+		<verifyText description="Verify that text is contained in the page" text="Advanced Job Search"/>
+		<clickLink label="By Category"/>
+		<verifyText description="Verify that text is contained in the page" text="Open Jobs By Job Category"/>
+		<clickLink label="By Location"/>
+		<verifyText description="Verify that text is contained in the page" text="Open Jobs By Location"/>
+		<clickLink label="All Open Jobs"/>
+		<verifyText description="Verify that text is contained in the page" text="Advanced Job Search"/>
+		
+ 	    <!--Hourly External site -->
+		<invoke url="http://ki-ce-app2.in.kronos.com:8080/index.jsp?applicationName=DSIHourly"/>
+		<verifyText description="Verify that text is contained in the page" text="Welcome to Kronos Careers"/>
+		<clickLink label="All Open Jobs"/>		
+		<verifyText description="Verify that text is contained in the page" text="All Open Jobs"/>
+		<verifyText description="Verify that text is contained in the page" text="Administrative"/>
+		<verifyText description="Verify that text is contained in the page" text="Deploy Category"/>
+		<verifyText description="Verify that text is contained in the page" text="General"/>
+		<verifyText description="Verify that text is contained in the page" text="Test Position"/>
+		<verifyText description="Verify that text is contained in the page" text="qa"/>
+		<verifyText description="Verify that text is contained in the page" text="yellow"/>		
+	</steps>
+	</webtest>
+	   </target>
+</project>

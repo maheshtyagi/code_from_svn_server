@@ -1,0 +1,26 @@
+build.baseRoot=/home/app2/bamboo-home/xml-data/build-dir/BRONZE-TESTTEAM/checkout
+global.config.path=/home/app2/bamboo-home/xml-data/build-dir/BRONZE-TESTTEAM/localConfigFiles
+svn.checkout.url=svn://svn.deploy.com/repositories/trunk/atao
+CIfrom.revision=59058
+svn.ASSMNTcheckout.url=svn://svn.deploy.com/repository4/trunk/assessments
+ASSMNTfrom.revision=3298
+svn.help.checkout.url=svn://svn.deploy.com/repositories/trunk/help
+help.from.revision=59058
+build.number.root=8.6.0
+keep.build.files=false
+backup.existing.deployment=false
+udp.address=237.0.0.120
+cluster.group=kiceapp2in-8180
+db.tnsname=
+jboss.http.port=8180
+jboss.jndi.port=1199
+upgrade.sql=8_6_SR0_Schema_Upgrade.sql
+cleanup.sql=table_cleanup.sql
+clover.coverage=true
+
+#Properties for removing build activity
+#no.checkoutcompile.build=1
+#no.deploy.build=1
+no.se.build=1
+no.junit.build=1
+#no.clover.report=1

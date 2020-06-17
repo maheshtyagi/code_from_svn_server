@@ -1,0 +1,39 @@
+#############################################################################
+#Atao Custom Properties
+#############################################################################
+DEVINT_NEO.atao.persist.jdbc.driver=oracle.jdbc.driver.OracleDriver
+DEVINT_NEO.atao.persist.jdbc.url=jdbc:oracle:thin:@KAP-US-HSGINT.us.kronos.com:1521:integrate
+DEVINT_NEO.atao.persist.jdbc.user=DEVINT_NEO
+DEVINT_NEO.atao.persist.jdbc.pass=DEVINT_NEO
+DEVINT_NEO.hibernate.dialect=org.hibernate.dialect.Oracle9Dialect
+DEVINT_NEO.atao.assets=/home/atao/bamboo-home/xml-data/build-dir/INTBRANCH-CIBUILD/checkout/atao/core/assets
+DEVINT_NEO.atao.db.type=Oracle
+
+atao.assets=/home/atao/bamboo-home/xml-data/build-dir/INTBRANCH-CIBUILD/checkout/atao/core/assets
+atao.assets.files=core/assets/applications
+atao.assets.pdfs=/home/atao/bamboo-home/xml-data/build-dir/INTBRANCH-CIBUILD/checkout/atao/applications/hmc/form
+
+atao.persist.logical.db=DEVINT_NEO
+
+
+atao.jibx.db_expimplog.enable=false
+
+
+#############################################################################
+# Hibernate properties
+#############################################################################
+
+atao.virtualAssetPath=/core/assets
+
+###for c3po connection caching
+hibernate.cache.use_query_cache=true
+hibernate.c3p0.idle_test_period=1800
+hibernate.c3p0.timeout=1800
+hibernate.c3p0.max_size=300
+hibernate.c3p0.min_size=50
+hibernate.c3p0.max_statements=0
+
+hibernate.max_fetch_depth=3
+
+SystemVariable.EditableLibTypes=0,1,2
+SystemVariable.ServerGMTOffset=330

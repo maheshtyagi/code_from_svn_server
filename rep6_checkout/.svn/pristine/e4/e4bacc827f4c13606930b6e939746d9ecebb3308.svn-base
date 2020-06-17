@@ -1,0 +1,36 @@
+#------------------------------------------------------------------------------------------
+# Package basic settings 
+#------------------------------------------------------------------------------------------
+# what directory did you unzip the release ... 
+package.dir=/home/atao/bamboo-home/xml-data/build-dir/OMNIUS-84INTBRANCH/packageWorkDir
+# where is the home for ... 
+asset.home=/home/atao/jboss43-8280/jboss-as/server/production/deploy/atao.ear/atao.war/assets
+static.home=/home/atao/jboss43-8280/jboss-as/server/production/deploy/atao.ear/atao.war/static
+
+
+#------------------------------------------------------------------------------------------
+# Conditionals: false means delete
+#------------------------------------------------------------------------------------------
+keep.build.files=true
+
+#------------------------------------------------------------------------------------------ 
+# Installation Properties ... properties that are replaced in template files
+#------------------------------------------------------------------------------------------ 
+# Installation Files to process - these are assumed to be in classes
+# N.B   : multiserver-ehcache.xml not done
+#       : treecache.xml not done either 
+# Installation Properties
+#------------------------------------------------------------------------------------------ 
+#app.server.install.dir=/home/atao/jboss43-8280/jboss-as
+app.server.dir=/home/atao/jboss43-8280/jboss-as
+db.url=dev-integrations.deploy.com:1521:integrate
+db.username=DEVINT_84BRANCH
+db.password=DEVINT_84BRANCH
+asset.file.dir=/home/atao/jboss43-8280/jboss-as/server/production/deploy/atao.ear/atao.war/static
+asset.dir=/home/atao/jboss43-8280/jboss-as/server/production/deploy/atao.ear/atao.war/assets
+contextroot=/
+jndi.proto.host.port=localhost:1100
+smtp.server.host=mailhost.deploy.com
+smtp.server.port=25
+to.recipients=dev-pepp-oljb@mailhost.deploy.com
+

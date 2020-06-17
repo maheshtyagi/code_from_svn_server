@@ -1,0 +1,44 @@
+build.baseRoot=${bamboo.build.dir}/checkout
+global.config.path=${bamboo.build.dir}/localConfigFiles
+svn.branch=svn+ssh://it-apps-4.corp.unicru.com/svnroot/repositories/trunk
+
+svn.checkout.url=${svn.branch}/atao
+CIfrom.revision=HEAD
+svn.db.checkout.url1=svn+ssh://it-apps-4.corp.unicru.com/svnroot/repositories/trunk/db
+
+db.start.revision=103364
+#103552 is db.end.revision(svn->trunk->db) at the time of this export, this will be db.start.revision on next translation export 
+(locally captured screen shot can be referred).
+
+
+
+#svn.db.checkout.url2=svn://it-apps-4.corp.unicru.com/repositories/trunk/db
+svn.db.checkout.url2=svn+ssh://it-apps-4.corp.unicru.com/svnroot/repositories/trunk/db
+
+
+db.end.revision=HEAD
+db.from.revision=${CIfrom.revision}
+svn.ASSMNTcheckout.url=svn+ssh://it-apps-4.corp.unicru.com/svnroot/repository4/trunk/assessments
+ASSMNTfrom.revision=HEAD
+svn.help.checkout.url=${svn.branch}/help
+help.from.revision=HEAD
+#----------------------------------------
+# Atao Product Version info
+#----------------------------------------
+atao.major=9
+atao.minor=0
+atao.service=101
+atao.patch=0
+product.version=${atao.major}.${atao.minor}
+atao.version=${atao.major}.${atao.minor}.${atao.service}.${atao.patch}
+build.number.root=${atao.version}
+build.number.iteration=1
+bom.file.name=misc/boms/${product.version}_SR${atao.service}_Bom.xml
+#bom.file.name=misc/boms/8_8_Bom.xml
+
+# Include assessment jars every time in bom per Mayank new bom creation processs.
+ASSMNT.build=true
+
+# For automatic update of rev numbers in .jar names in BOM file
+atao.jar.list=applications,core,integration,ldap,services,taglibs,tools,webservices,workflow,model-common,model-core,model-tmd-apps
+assessment.jar.list=api,impl,model

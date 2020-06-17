@@ -1,0 +1,22 @@
+#------------------------------------------------------------------------------------------
+# The directory where the release vehicle will be assembled. 
+#------------------------------------------------------------------------------------------
+workingdir=/export/home/rebuild/bamboo-home/xml-data/build-dir/CLEANDB-CLEAN/
+release.assmbly.dir=${workingdir}/checkout/atao/relWorkArea
+
+
+#------------------------------------------------------------------------------------------
+# Release Scripts, 
+# This is the location of the client / ps / cet libraries. 
+# The import list is isterated and imported.  Note that all libraries in all directories 
+#------------------------------------------------------------------------------------------
+release.ddl=/export/home/rebuild/custlibs/libraries
+upgrade.script.dir=misc/sqlscripts/upgrades
+
+
+#------------------------------------------------------------------------------------------
+# Transportable release zip file 
+#------------------------------------------------------------------------------------------
+create.transportable.release=true
+
+

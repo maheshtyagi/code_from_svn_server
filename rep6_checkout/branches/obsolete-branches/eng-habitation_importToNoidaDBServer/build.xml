@@ -1,0 +1,13 @@
+<project name="DB import To Noida Server" default="import-database" basedir=".">
+
+    <taskdef resource="net/sf/antcontrib/antlib.xml" />
+
+    <target name="import-database" description="import the 8.5 DB dump from neo to Noida Local DB Server di-bp-dbserver..">
+        <exec dir="D:\Automated_DB_dumps" executable="cmd">
+	    <arg value="/c"/>
+	    <arg value="createFreshDB.bat"/>
+	    <arg value="-p"/>
+	</exec>
+    </target>
+
+</project>

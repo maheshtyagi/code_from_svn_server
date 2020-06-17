@@ -1,0 +1,56 @@
+### override these ###
+# where did you check out?
+eng.root=/export/home/rebuild/bamboo-home/xml-data/build-dir/GOLD-CIBUILD/checkout/atao
+mx.context=wwwroot
+
+# Used by HTTPUnit
+
+# needed for deploy-developer
+application.root=/export/home/rebuild/bamboo-home/xml-data/build-dir/GOLD-CIBUILD/checkout/atao
+jboss.root=/export/home/rebuild/bamboo-home/xml-data/build-dir/GOLD-CIBUILD/jboss-eap-4.3-buildArea
+
+# Used by HTTPUnit and CFUnit
+
+#Needed to deploy-undeploy wsdd
+webservice.location=http://kap-us-hsgela03.us.kronos.com:8080/atao/services
+
+# ear generation settings
+ear.root=/export/home/rebuild/bamboo-home/xml-data/build-dir/GOLD-CIBUILD/checkout
+ear.name=atao.ear
+war.name=atao.war
+tests.include.exclude=include
+#ear.excludes.libraries=true
+ear.excludes.help=true
+
+# Used by emma
+coverage.enabled=true
+
+# include stubs in ear
+tests.include.exclude=include
+
+target.db=neo
+
+#Uncomment to export all files
+#ignore.export.all=true
+
+#Location from which your custom.properties file will be copied
+my.custom.properties.home=/export/home/rebuild/bamboo-home/xml-data/build-dir/GOLD-CIBUILD/localConfigFiles/buildAndRelease
+jibxclasspath=outputclasspath
+
+# -------------------------------------------------------------------------------------------
+# used for file naming, database specific stuff
+# -------------------------------------------------------------------------------------------
+atao.db.type=oracle
+atao.db.gen.delimiter=;
+
+### override these ###
+
+# For WebTest
+webtest.contextPath=
+
+# Adding this override per Vikas, for Delete Client webtest
+webtest.importtest.file=/export/home/rebuild/bamboo-home/xml-data/build-dir/GOLD-CIBUILD/checkout/atao/misc/exports/clientData/InitialGoLiveClient.zip
+
+#override these, copied from eng-instigation trunk short build.
+client.list=bootstrap,Baseline Script Test,Domain Tests
+client.library.list=InitialGoLiveClient#InitialGoLiveClient:InitialGoLiveClient_enduser

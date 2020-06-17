@@ -1,0 +1,30 @@
+# for selenium bootstrap
+config.domain=http://ki-ce-app2.in.kronos.com:8280/
+config.clientName=ScoringInc
+config.hmc.username=scoring
+config.hmc.password=123456
+config.uncPath=T:\\xml-data\\build-dir\\V90SR2Int-long\\checkout\\atao\\functionalTests
+config.startuptime=120000
+
+# for SQL config
+sqlconfig.jdbc=jdbc:oracle:thin:@di-bp-demo3.in.kronos.com:1521:oracle
+sqlconfig.username=${target.db}
+sqlconfig.password=${target.db}
+
+# This file contains the Selenium configurations as follows:
+#* The first property represents the domain name.
+#* The second property represents the client name.  Leave it blank if testing Deploy Solutions (DSIHourly) client.
+#* The third property represents the HMC username.
+#* The fourth property represents the HMC password.
+#* The fifth property represents the unc path for the Selenium Grid agent machine to use the hub's input files under the config directory.
+#* If you are not using Selenium Grid then enter your local machine name here, following the above syntax
+
+#Edit these five properties where appropriate to get Selenium running on your environment.
+
+# DON'T change anything below this line unless you know what you are doing
+# where are we running?
+selenium.host=localhost
+selenium.port=7171
+
+# try headless mode or not
+selenium.headless=false

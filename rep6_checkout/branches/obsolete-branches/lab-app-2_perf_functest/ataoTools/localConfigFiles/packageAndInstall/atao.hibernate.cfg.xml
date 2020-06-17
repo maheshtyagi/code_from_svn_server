@@ -1,0 +1,56 @@
+<?xml version='1.0' encoding='utf-8'?>
+
+<!DOCTYPE hibernate-configuration PUBLIC
+          "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+          "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
+
+<!-- hibernate conifguration file for all atao applications -->
+<!-- There must be a correlation betwetween the named datasource java:/WolfDS and the deployed datasource file. -->
+<hibernate-configuration>
+  <session-factory>
+
+    <!-- jdbc connection properties -->
+    <!--  props for container ds   -->
+    <!--property name="connection.datasource">java:/ataoDS</property-->
+    
+    <!-- properties  for ant based programs        -->
+    <property name="hibernate.connection.driver_class">oracle.jdbc.driver.OracleDriver</property>
+    <property name="hibernate.connection.url">jdbc:oracle:thin:@10.130.21.66:1521:DEVHMC</property>
+    <property name="hibernate.connection.username">perf</property>
+    <property name="hibernate.connection.password">perf</property>
+    <property name="hibernate.dialect">org.hibernate.dialect.Oracle9Dialect</property>
+
+
+    <!--  props for container managed transaction.      
+    <property name="transaction.factory_class">org.hibernate.transaction.JTATransactionFactory</property>
+    <property name="transaction.manager_lookup_class">org.hibernate.transaction.JBossTransactionManagerLookup</property>
+    -->
+
+    <!--  props for container managed caching.  NB. Parameterize for build kit -->
+    <property name="hibernate.cache.use_second_level_cache">true</property>
+    <property name="hibernate.cache.provider_class">org.hibernate.cache.EhCacheProvider</property>
+    <property name="hibernate.cache.provider_configuration_file_resource_path">ehcacheJBPM.xml</property>
+
+    <!-- props for builds only. NB. Parameterize for build kit --> 
+    <!-- these are set in the DATABASE_ds.xml in the server context deploy directory -->
+    <property name="c3p0.idle_test_period">1800</property> <!-- seconds --> 
+    <property name="c3p0.max_size">300</property> 
+    <property name="c3p0.min_size">50</property> 
+    <property name="c3p0.max_statements">0</property> 
+    <property name="c3p0.timeout">1800</property> 
+        
+    <!-- general properties 
+    <property name="hibernate.cache.use_query_cache">true</property>
+    <property name="hibernate.cache.use_secondlevel_cache">true</property>
+    <property name="hibernate.show_sql">false</property>
+    <property name="hibernate.format_sql">false</property>
+    <property name="hibernate.use_sql_comments">false</property>
+     -->
+    <property name="hibernate.dialect">org.hibernate.dialect.Oracle9Dialect</property>
+    
+
+  </session-factory>
+</hibernate-configuration>
+
+
+

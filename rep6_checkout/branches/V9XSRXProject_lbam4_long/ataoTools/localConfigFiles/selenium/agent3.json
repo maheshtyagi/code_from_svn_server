@@ -1,0 +1,33 @@
+
+{
+  "capabilities":
+      [
+        {
+          "browserName": "*firefox",
+          "maxInstances": 10,
+          "seleniumProtocol": "Selenium"
+        },
+        {
+          "browserName": "*googlechrome",
+          "maxInstances": 0,
+          "seleniumProtocol": "Selenium"
+        },
+        {
+          "browserName": "*iexploreproxy",
+          "maxInstances": 1,
+          "seleniumProtocol": "Selenium"
+        },
+       
+      ],
+    "configuration":
+        {
+    "proxy": "org.openqa.grid.selenium.proxy.DefaultRemoteProxy",
+        "maxSession":6,
+    "port": 5558,
+
+    "host": ip,
+    "register": true,
+    "registerCycle": 5000,
+        "hubPort":7171,
+        }
+}

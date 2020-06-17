@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<project name="InstallBOM" default="InstallBOM" basedir=".">
+<property file="bomInstall.properties"/>
+
+<!-- Getting the Timestamp  -->
+<tstamp>
+    <format  property = "TIMESTAMP"  pattern="yyyy-MM-dd-hh-mm"/>
+</tstamp>
+
+<!-- Setting the property to name of the directory to be created-->
+<property name="bom-local-staging-area" value="${bom.actual.staging.area}-${TIMESTAMP}"/>
+
+<!-- Target to create the staging directory. -->
+<target name="create-Directory">
+    <echo message="Creating directory ${bom-local-staging-area}"/>
+     <mkdir dir="${bom-local-staging-area}"/>
+    <echo message="${bom-local-staging-area} directory created"/>
+</target>
+
+<!--Target to locally copy the filles to the local staging area-->
+<target name="stage-BOM" depends="create-Directory">
+<scp file="${atao.stage.account}@${atao.stage.host}:${atao.stage.dir}/${bom.file.name}"
+     keyfile="${user.home}/.ssh/id_rsa"
+     trust="true"
+     passphrase=""
+     verbose="true" todir="${bom-local-staging-area}">
+ </scp>
+</target>
+<!-- Target to locally install the BOM-->
+<target name="InstallBOM" depends="create-Directory,stage-BOM">
+    <echo message="Running BOM Install"/>
+    <exec executable="/bin/sh">
+        <arg value="./bin/applyBOM.sh"/>
+        <arg value="${bom-local-staging-area}"/>
+        <arg value="${bom.file.name}"/>
+    </exec>
+    <echo message="BOM Install Complete"/>
+</target>
+</project>

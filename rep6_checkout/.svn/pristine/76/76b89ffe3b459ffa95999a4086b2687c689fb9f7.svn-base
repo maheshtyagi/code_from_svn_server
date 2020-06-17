@@ -1,0 +1,1112 @@
+<?xml version="1.0"?>
+<project name="build-atao-ear" default="ear-build-same-db" basedir=".">
+
+    <taskdef resource="net/sf/antcontrib/antlib.xml" />
+    <taskdef resource="net/sf/incanto/antlib.xml" />
+
+    <!-- The Svn4Ant distribution .jar file and all
+         dependents must be in ant's classpath -->
+    <taskdef resource="org/jwaresoftware/svn4ant/install/antlib.xml"/>
+
+    <property name="package.base" value="${basedir}/packageWorkDir"/>
+    <property name="jboss.host" value="localhost" />
+
+    <property environment="env"/>
+    <property name="jboss.home" value="${env.JBOSS_HOME}"/>
+    <property name="app.server.dir" value="${env.JBOSS_HOME}"/>
+    <property name="java.home.dir" value="${env.JAVA_HOME}"/>
+
+
+    <!-- Composite targets -->
+    <target name="ear-build-separate-db" depends="stop-jboss43, create-release-vehicle, prepare-appserver-for-deployment, unzip-and-package-release, run-cleanup-sql, run-upgrade-sql, deploy-ear, copy-runtime-configfiles, copy-import-config-files, import-libraries, start-jboss43" />
+    <target name="ear-build-same-db" depends="stop-jboss43, create-release-vehicle, prepare-appserver-for-deployment, unzip-and-package-release, deploy-ear, copy-runtime-configfiles, start-jboss43" />
+
+    <target name="long-ear-build" depends="long-ear-build-nostart, start-jboss43" />
+    <target name="long-ear-build-nostart" depends="stop-jboss43, create-release-vehicle, prepare-appserver-for-deployment, unzip-and-package-release, deploy-ear, copy-runtime-configfiles" />
+
+    <target name="create-release-vehicle" depends="checkout-atao, copy-buildtime-configfiles, setup-build-number, build"/>
+    <target name="create-bom-package" depends="checkout-atao,check-readme-file,verify-description-file,copy-buildtime-configfiles,setup-build-number,build-bom,stage-release-zip,tag-branch" />
+    <!-- Target to test bom package -->
+    <target name="test-create-bom-package" depends="checkout-atao,check-readme-file,verify-description-file,copy-buildtime-configfiles,setup-build-number,build-bom,test-stage-release-zip" />
+
+    <target name="create-newdb-and-bom-package" depends="new-db-from-filesystem, check-readme-file,verify-description-file,copy-buildtime-configfiles,setup-build-number,build-bom,stage-release-zip,tag-branch"/>
+    <target name="test-create-newdb-and-bom-package" depends="new-db-from-filesystem, check-readme-file,verify-description-file,copy-buildtime-configfiles,setup-build-number,build-bom,test-stage-release-zip"/>
+
+    <!-- Adding a check for the README file -->
+    <target name="check-readme-file">
+         <available property="readme.exists" file="${build.base}/misc/boms/ReadMe_Multiserver_${atao.version}.txt"/>
+              <fail message="ReadMe File does not exists:${build.base}/misc/boms/ReadMe_Multiserver_${atao.version}.txt">
+                    <condition>
+                       <not>
+                           <isset property="readme.exists"/>
+                       </not>
+                     </condition>
+               </fail>
+    </target>
+
+    <target name="assemble-TMD-help" if="help.from.revision" depends="checkout-TMD-help">
+    	<record name="assemble-TMD-help.log" action="start"/>
+        <unzip src="${build.baseRoot}/HelpSource/TMDHMC.08.en.zip" dest="${build.base}/help/HMC"/>
+        <unzip src="${build.baseRoot}/HelpSource/TMDADM.08.en.zip" dest="${build.base}/help/Admin"/>
+        <unzip src="${build.baseRoot}/HelpSource/TMDSeeker.08.en.zip" dest="${build.base}/help/ce"/>
+    	<record name="assemble-TMD-help.log" action="stop"/>
+    </target>
+
+    <target name="backup-database" description="export current target.db.." depends="set-jboss-deploy-path">
+        <move file="export_db.log" tofile="export_db.log.old" verbose="true" failonerror="false"/>
+        <record name="export_db.log" action="start"/>
+            <xmlproperty file="${app.server.dir}/server/${jboss.deploy.path}/deploy/atao-ds.xml"/>
+            <property name="db.user" value="${datasources.local-tx-datasource.user-name}"/>
+            <property name="db.pass" value="${datasources.local-tx-datasource.password}"/>
+            <echo message="User: ${db.user}"/>
+            <echo message="Password: ${db.pass}"/>
+
+            <move file="${db.user}.dmp" tofile="${db.user}.dmp.old" verbose="true" failonerror="false"/>
+
+            <exec dir="${basedir}" executable="exp" failonerror="true">
+                    <arg line="${db.user}/${db.pass}@${db.tnsname} file=${db.user}.dmp owner=${db.user}"/>
+            </exec>
+        <record name="export_db.log" action="stop"/>
+    </target>
+
+
+    <target name="backup-existing-deployment" depends="cleanout-jboss-generated-files">
+        <property file="${build.base}/antGlobalLocalSettings.properties"/>
+        <!-- First delete previous backup app server deployment -->
+        <delete dir="${app.server.dir}.old" failonerror="true"/>
+        <!-- Verify that delete was successful-->
+        <available file="${app.server.dir}.old" property="app.server.dir.old.notDeleted"/>
+        <fail if="app.server.dir.old.notDeleted" message="Previous app server backup not deleted"/>
+        <!-- then copy previous app server dir to backup -->
+        <copy todir="${app.server.dir}.old" failonerror="true">
+        	<fileset dir="${app.server.dir}"/>
+        </copy>
+        <!-- Verify that copy was successful-->
+        <available file="${app.server.dir}.old" property="app.server.dir.copied"/>
+        <fail unless="app.server.dir.copied" message="Previous app server dir not copied"/>
+    </target>
+
+
+    <target name="build-no-release">
+      <record name="build.log" action="start"/>
+		<ant antfile="${build.base}/build.xml" dir="${build.base}" inheritall="false">
+			<target name="new-release"/>
+		</ant>
+      <record name="build.log" action="stop"/>
+    </target>
+
+    <target name="build">
+      <record name="build.log" action="start"/>
+        <if>
+            <equals arg1="${clover.coverage}" arg2="true" />
+            <then>
+                <ant antfile="${build.base}/build.xml" dir="${build.base}" inheritall="false">
+                    <target name="use-clover"/>
+                    <target name="new-release"/>
+                </ant>
+                <antcall target="clover-report-generation"/>
+            </then>
+            <else>
+                <ant antfile="${build.base}/build.xml" dir="${build.base}" inheritall="false">
+                    <target name="new-release"/>
+                </ant>
+            </else>
+        </if>
+        <if>
+          <equals arg1="${run.fulldb.export}" arg2="true" />
+            <then>
+              <ant antfile="${build.base}/build.xml" dir="${build.base}" inheritall="false">
+                <target name="full-database-export" />
+              </ant>
+            </then>
+        </if>
+        <delete>
+           <fileset dir="${build.base}/WEB-INF/lib" includes="atao-assessments.api-0.0.0.1.jar atao-assessments.impl-0.0.0.1.jar atao-assessments.model-0.0.0.1.jar"/>
+        </delete>
+      <record name="build.log" action="stop"/>
+
+      <record name="deploy-developer.log" action="start"/>
+     	  <ant antfile="${build.base}/build.xml" dir="${build.base}" inheritall="false">
+     	  	<target name="jars"/>
+     	  	<target name="deploy-developer-webapp"/>
+     	  </ant>
+          <delete>
+              <fileset dir="${build.base}/WEB-INF/lib" includes="atao-assessments.api-0.0.0.1.jar atao-assessments.impl-0.0.0.1.jar atao-assessments.model-0.0.0.1.jar"/>
+          </delete>
+      <record name="deploy-developer.log" action="stop"/>
+
+      <antcall target="build-and-add-assessments" />
+
+      <record name="create-ear-release.log" action="start"/>
+          <ant antfile="${build.base}/release.xml" dir="${build.base}" target="create-ear-release" inheritall="false"/>
+      <record name="create-ear-release.log" action="stop"/>
+    </target>
+
+
+    <target name="build-and-add-assessments" description="Build Assessments and add components to aTao release vehicle" if="ASSMNTfrom.revision" >
+        <record name="assessments.log" action="start"/>
+            <ant antfile="${build.baseRoot}/assessments/build.xml" dir="${build.baseRoot}/assessments" target="new-no-tests" inheritall="false"/>
+            <ant antfile="${build.baseRoot}/assessments/build.xml" dir="${build.baseRoot}/assessments" target="exportddl" inheritall="false"/>
+            <ant antfile="${build.baseRoot}/assessments/build.xml" dir="${build.baseRoot}/assessments" target="deploy-developer" inheritall="false"/>
+
+            <echo message="Add Assessment libraries, binaries, .sql and .csv to release vehicle" level="info" />
+
+            <mkdir dir="${build.base}/relWorkArea/${atao.build.number}/wardir/WEB-INF/binaries"/>
+            <copy todir="${build.base}/relWorkArea/${atao.build.number}/wardir/WEB-INF/binaries">
+                <fileset dir="${build.baseRoot}/assessments/ScoringLibraries" includes="*.*"/>
+            </copy>
+
+            <mkdir dir="${build.base}/relWorkArea/${atao.build.number}/wardir/WEB-INF/binaries/64bit"/>
+            <copy todir="${build.base}/relWorkArea/${atao.build.number}/wardir/WEB-INF/binaries/64bit">
+                <fileset dir="${build.baseRoot}/assessments/ScoringLibraries/64-bit Shared Libraries" includes="**/*.*"/>
+            </copy>
+
+            <mkdir dir="${build.base}/WEB-INF/binaries"/>
+            <copy todir="${build.base}/WEB-INF/binaries">
+                <fileset dir="${build.baseRoot}/assessments/ScoringLibraries" includes="*.*"/>
+            </copy>
+
+            <mkdir dir="${build.base}/WEB-INF/binaries/64bit"/>
+            <copy todir="${build.base}/WEB-INF/binaries/64bit">
+                <fileset dir="${build.baseRoot}/assessments/ScoringLibraries/64-bit Shared Libraries" includes="**/*.*"/>
+            </copy>
+
+
+
+            <mkdir dir="${build.base}/relWorkArea/${atao.build.number}/misc/sqlscripts/Assessments"/>
+            <copy todir="${build.base}/relWorkArea/${atao.build.number}/misc/sqlscripts/Assessments">
+                <fileset dir="${build.baseRoot}/assessments/misc/sqlscripts" includes="**/*.*"/>
+            </copy>
+            <mkdir dir="${build.base}/relWorkArea/${atao.build.number}/misc/sqlscripts/Assessments/ddl"/>
+            <copy todir="${build.base}/relWorkArea/${atao.build.number}/misc/sqlscripts/Assessments/ddl">
+                <fileset dir="${build.baseRoot}/assessments/output/ddl"/>
+            </copy>
+            <!-- Per RE-46, include the Assessments .csv files in 8.5 release vehicles -->
+            <mkdir dir="${build.base}/relWorkArea/${atao.build.number}/misc/Assessments"/>
+            <copy todir="${build.base}/relWorkArea/${atao.build.number}/misc/Assessments">
+                <fileset dir="${build.baseRoot}/assessments/misc/Scoring" includes="**/*.csv"/>
+            </copy>
+            <!-- include the Assessment content and question files in release vehicles -->
+            <mkdir dir="${build.base}/relWorkArea/${atao.build.number}/misc/Assessments/Content"/>
+            <copy todir="${build.base}/relWorkArea/${atao.build.number}/misc/Assessments/Content">
+                <fileset dir="${build.baseRoot}/assessments/misc/Content" includes="*.csv"/>
+            </copy>
+            <mkdir dir="${build.base}/relWorkArea/${atao.build.number}/misc/Assessments/Content/ContentImportFiles"/>
+            <copy todir="${build.base}/relWorkArea/${atao.build.number}/misc/Assessments/Content/ContentImportFiles">
+                <fileset dir="${build.baseRoot}/assessments/misc/Content/ContentImportFiles" includes="*.csv"/>
+            </copy>
+        <record name="assessments.log" action="stop"/>
+    </target>
+
+    <!-- skip this if import-all was alrady run from a newDb build using new-db-from-filesystem -->
+    <target name="antcall-import-all-from-filesystem" unless="skip-import-all-from-filesystem">
+        <antcall target="import-all-from-filesystem" inheritall="false">
+            <param name="db.exports.dir" value="${build.baseRoot}/db"/>
+        </antcall>
+    </target>
+
+    <target name="build-bom">
+    	<!-- Make this switchable between old- and new-style BOM releases (default to new).
+        Override if necessary in local-ear-build.properties or -D on command line -->
+        <record name="build-bom-installer.log" action="start"/>
+            <property name="release.script" value="newRelease.xml"/>
+            <echo message="Creating bom installer using ${release.script}" level="info" />
+            <ant antfile="${build.base}/${release.script}" dir="${build.base}" target="create-bom-installer" inheritall="false">
+                <property name="bom.file.name" value="${bom.file.name}"/>
+                <property name="atao.build.number" value="${build.number.root}.${chkout.revision}"/>
+            </ant>
+        <record name="build-bom-installer.log" action="stop"/>
+
+        <record name="build.log" action="start"/>
+    	    <ant antfile="${build.base}/build.xml" dir="${build.base}" inheritall="false">
+    	        <target name="new-release"/>
+            </ant>
+            <delete>
+                <fileset dir="${build.base}/WEB-INF/lib" includes="atao-assessments.api-0.0.0.1.jar atao-assessments.impl-0.0.0.1.jar atao-assessments.model-0.0.0.1.jar"/>
+            </delete>
+        <record name="build.log" action="stop"/>
+
+        <antcall target="antcall-import-all-from-filesystem"/>
+
+        <record name="fde.log" action="start"/>
+    	    <ant antfile="${build.base}/build.xml" dir="${build.base}" inheritall="false">
+                <target name="full-database-export"/>
+            </ant>
+        <record name="fde.log" action="stop"/>
+
+        <record name="deploy-developer.log" action="start"/>
+            <ant antfile="${build.base}/build.xml" dir="${build.base}" target="deploy-developer" inheritall="false"/>
+            <delete>
+                <fileset dir="${build.base}/WEB-INF/lib" includes="atao-assessments.api-0.0.0.1.jar atao-assessments.impl-0.0.0.1.jar atao-assessments.model-0.0.0.1.jar"/>
+            </delete>
+        <record name="deploy-developer.log" action="stop"/>
+
+        <antcall target="build-and-add-assessments"/>
+
+        <record name="create-bom-release.log" action="start"/>
+            <echo message="Creating BOM using ${release.script}" level="info" />
+            <ant antfile="${build.base}/${release.script}" dir="${build.base}" target="create-bom-release" inheritall="false">
+              <property name="bom.file.name" value="${bom.file.name}"/>
+              <property name="atao.build.number" value="${atao.version}.${chkout.revision}"/>
+            </ant>
+            <zip update="yes" basedir="${build.baseRoot}/HelpSource" includes="**/*.zip"
+                 destfile="${build.base}/relWorkArea/${atao.version}.${chkout.revision}.zip" />
+
+        <record name="create-bom-release.log" action="stop"/>
+    </target>
+    
+    
+<!-- To copy the generated bom into dev-ftp area -->
+        <target name="stage-release-zip">
+                
+                <record name="stage-release-zip.log" action="start"/>
+        	<svnrevget path="${build.baseRoot}/atao" revisionproperty="chkout.revision"/>
+                <!-- The following variables are defined in repo6 localEarBuild.properties ... -->
+                <property name="stage.dir" value="${atao.stage.top}/${atao.release}/${atao.version}/${chkout.revision}"/>
+                <!-- First create the destination directory using sshexec and then copy usign scp -->
+                <sshexec host="${atao.stage.host}"
+                        username="${atao.stage.account}"
+                        keyfile="${user.home}/.ssh/id_rsa"
+                        trust="true"
+                        command="[ -d ${stage.dir} ] || mkdir -p ${stage.dir}"/>
+                <!-- Depending on the type of builds we need to create needed directory path -->
+                <scp todir="${atao.stage.account}@${atao.stage.host}:${stage.dir}/"
+                        keyfile="${user.home}/.ssh/id_rsa"
+                        trust="true"
+                        passphrase=""
+                        verbose="true" >
+                        <fileset dir="${build.base}/relWorkArea/">
+                                <include name="${atao.version}.${chkout.revision}.zip" />
+                        </fileset>
+                        <fileset dir="${build.base}/misc/boms/">
+                                <include name="ReadMe_Multiserver_${atao.version}.txt" />
+                        </fileset>
+                </scp>
+                <antcall target="notify-mail-list" inheritall="true"/>
+                
+                <record name="stage-release-zip.log" action="stop"/>
+        </target>
+        
+           <target name="test-stage-release-zip">
+	                
+	                <record name="test-stage-release-zip.log" action="start"/>
+	        	<svnrevget path="${build.baseRoot}/atao" revisionproperty="chkout.revision"/>
+	                <!-- The following variables are defined in repo6 localEarBuild.properties ... -->
+	                <property name="stage.dir" value="${test.atao.stage.top}/${atao.release}/${atao.version}/${chkout.revision}"/>
+	                <!-- First create the destination directory using sshexec and then copy usign scp -->
+	                <sshexec host="${atao.stage.host}"
+	                        username="${atao.stage.account}"
+	                        keyfile="${user.home}/.ssh/id_rsa"
+	                        trust="true"
+	                        command="[ -d ${stage.dir} ] || mkdir -p ${stage.dir}"/>
+	                <!-- Depending on the type of builds we need to create needed directory path -->
+	                <scp todir="${atao.stage.account}@${atao.stage.host}:${stage.dir}/"
+	                        keyfile="${user.home}/.ssh/id_rsa"
+	                        trust="true"
+	                        passphrase=""
+	                        verbose="true" >
+	                        <fileset dir="${build.base}/relWorkArea/">
+	                                <include name="${atao.version}.${chkout.revision}.zip" />
+	                        </fileset>
+	                        <fileset dir="${build.base}/misc/boms/">
+	                                <include name="ReadMe_Multiserver_${atao.version}.txt" />
+	                        </fileset>
+	                </scp>
+	                <antcall target="notify-mail-list" inheritall="true"/>
+	                
+	                <record name="test-stage-release-zip.log" action="stop"/>
+        </target>
+        <target name="notify-mail-list" description="Notify everyone in mail.list of BOM copy location">
+                <!-- Overwrite To list for Debug purposes -->
+		<if>
+            		<equals arg1="${donot.notify}" arg2="true" />
+            		<then>
+				<property name="atao.stage.notification" value="Releng@cadienttalent.com" />
+            		</then>
+		</if>
+                <!-- To list can be a single user or Outlook group defined in antLocalSetting.properties -->
+                <mail mailhost="smtp.pdx.corp.unicru.com" mailport="25" subject="Available: BOM package ${atao.version}.${chkout.revision}.zip" tolist="${atao.stage.notification}">
+                        <from address="Releng@cadienttalent.com"/>
+                        <replyto address="Releng@cadienttalent.com"/>
+                        <to address="Releng@cadienttalent.com"/>
+                        <message>
+The BOM package can be accessed at dev-ftp:${stage.dir}
+
+    target.db       = ${target.db}
+    svn.branch      = ${svn.branch}
+    atao.major      = ${atao.major}
+    atao.minor      = ${atao.minor}
+    atao.service    = ${atao.service}
+    atao.patch      = ${atao.patch}
+    atao.version    = ${atao.version}
+    chkout.revision = ${chkout.revision}
+    bom.file.name   = ${bom.file.name}
+
+    svn.ASSMNTcheckout.url = ${svn.ASSMNTcheckout.url}
+    ASSMNTfrom.revision    = ${ASSMNTfrom.revision}
+</message>
+                </mail>
+            <echo message="Successfully sent mail to ${atao.stage.notification}" level="info" />
+        </target>
+
+    <target name="checkout-atao">
+        <record name="checkout-atao.log" action="start"/>
+            <move file="${build.baseRoot}.old" tofile="${build.baseRoot}.old.delete" failonerror="false"/>
+
+            <!-- Decide whether to keep a backup of the previous checkout directory (may be safer but uses more space) -->
+            <if>
+                <equals arg1="${keep.build.files}" arg2="true" />
+                <then>
+                    <move file="${build.baseRoot}" tofile="${build.baseRoot}.old" failonerror="false"/>
+                </then>
+                <else>
+                    <move file="${build.baseRoot}" tofile="${build.baseRoot}.delete" failonerror="false"/>
+                </else>
+            </if>
+
+            <!-- Now check out a fresh copy and in parallel delete anything obsolete -->
+            <echo message="=========> Check-out a fresh copy of revision ${CIfrom.revision} from ${svn.checkout.url}" level="info" />
+            <parallel>
+                <svncheckout from="${svn.checkout.url}" to="${build.base}" revision="${CIfrom.revision}" />
+                <delete dir="${build.baseRoot}.delete"     failonerror="false"/>
+                <delete dir="${build.baseRoot}.old.delete" failonerror="false"/>
+            </parallel>
+            <mkdir dir="${build.base}/WEB-INF/lib"/>
+        <antcall target="checkout-assessments" />
+        <antcall target="export-db" />
+        <antcall target="assemble-TMD-help" />
+        <record name="checkout-atao.log" action="stop"/>
+    </target>
+
+
+    <target name="checkout-assessments" if="ASSMNTfrom.revision">
+        <record name="checkout-assessments.log" action="start"/>
+            <echo message="=========> Check-out a fresh copy of revision ${ASSMNTfrom.revision} from ${svn.ASSMNTcheckout.url}" level="info" />
+            <svncheckout from="${svn.ASSMNTcheckout.url}" to="${build.baseRoot}/assessments" revision="${ASSMNTfrom.revision}" />
+        <record name="checkout-assessments.log" action="stop"/>
+    </target>
+
+
+    <target name="checkout-TMD-help" if="help.from.revision" >
+        <record name="checkout-TMD-help.log" action="start"/>
+            <svncheckout from="${svn.help.checkout.url}" to="${build.baseRoot}/HelpSource"/>
+        <record name="checkout-TMD-help.log" action="stop"/>
+    </target>
+
+
+    <target name="cleanout-jboss-generated-files" depends="set-jboss-deploy-path">
+        <parallel>
+            <delete dir="${app.server.dir}/server/${jboss.deploy.path}/tmp"  failonerror="false"/>
+            <delete dir="${app.server.dir}/server/${jboss.deploy.path}/work" failonerror="false"/>
+            <delete dir="${app.server.dir}/server/${jboss.deploy.path}/data" failonerror="false"/>
+        </parallel>
+    </target>
+
+
+    <target name="clover-report-generation">
+        <ant antfile="${build.base}/build.xml" dir="${build.base}" inheritall="false">
+            <target name="xml-clover-report"/>
+            <target name="html-clover-report"/>
+        </ant>
+    </target>
+
+
+    <target name="copy-assessments-files-for-newdb" description="Copy selected Assessments components to aTao filesystem" if="ASSMNTfrom.revision" >
+        <echo message="Add Assessment .sql and .csv to aTao workarea" level="info" />
+        <mkdir dir="${build.base}/misc/sqlscripts/Assessments"/>
+        <copy todir="${build.base}/misc/sqlscripts/Assessments">
+            <fileset dir="${build.baseRoot}/assessments/misc/sqlscripts" includes="**/*.*"/>
+        </copy>
+        <mkdir dir="${build.base}/misc/sqlscripts/Assessments/ddl"/>
+        <copy todir="${build.base}/misc/sqlscripts/Assessments/ddl">
+            <fileset dir="${build.baseRoot}/assessments/output/ddl"/>
+        </copy>
+        <mkdir dir="${build.base}/misc/Assessments"/>
+        <copy todir="${build.base}/misc/Assessments">
+            <fileset dir="${build.baseRoot}/assessments/misc/Scoring" includes="**/*.csv"/>
+        </copy>
+    </target>
+
+
+    <target name="copy-buildtime-configfiles">
+        <copy todir="${build.base}" overwrite="true" verbose="true">
+        	<fileset dir="${buildtime.config.path}" includes="antLocalSettings.properties antGlobalLocalSettings.properties antReleaseLocalSettings.properties"/>
+        </copy>
+        <copy todir="${build.base}/misc/buildfiles" overwrite="true" verbose="true">
+        	<fileset dir="${buildtime.config.path}" includes="custom.properties atao.hibernate.cfg.xml"/>
+        </copy>
+        <mkdir dir="${build.base}/WEB-INF/classes"/>
+        <copy todir="${build.base}/WEB-INF/classes" overwrite="true" verbose="true">
+        	<fileset dir="${buildtime.config.path}" includes="log4j.properties atao.hibernate.cfg.xml"/>
+        </copy>
+        <!-- Start Adding for Assessments build -->
+        <copy todir="${build.baseRoot}/assessments" verbose="true">
+	        <fileset dir="${buildtime.config.path}/assessments" includes="antLocalSettings.properties"/>
+        </copy>
+        <copy todir="${build.baseRoot}/assessments/test/artifacts" verbose="true">
+	        <fileset dir="${buildtime.config.path}/assessments" includes="test.properties"/>
+        </copy>
+        <!-- End Adding for Assessments build -->
+    </target>
+
+
+    <target name="copy-import-config-files" description="Copy necessary config files to package dir to run import libraries step...">
+        <copy todir="${package.base}" overwrite="true" verbose="true">
+                <fileset dir="${packageinstall.config.path}" includes="antInstallLocalSettings.properties"/>
+        </copy>
+        <copy todir="${package.base}/wardir/WEB-INF/classes" overwrite="true" verbose="true">
+                <fileset dir="${packageinstall.config.path}" includes="log4j.properties custom.properties"/>
+        </copy>
+    </target>
+
+
+    <target name="copy-runtime-configfiles" depends="set-jboss-deploy-path" >
+        <copy todir="${app.server.dir}/server/${jboss.deploy.path}/deploy/atao.ear/atao.war/WEB-INF/classes" overwrite="true" verbose="true">
+            <fileset dir="${runtime.config.path}" includes="atao.hibernate.cfg.xml custom.properties log4j.properties c3p0.properties"/>
+        </copy>
+    </target>
+
+    <target name="copy-webtest-file" description="Copy WebTest Sanity file to Web Test Dir.">
+    	<copy todir="${build.base}/test/artifacts/webtest" overwrite="true" verbose="true">
+    		<fileset dir="${basedir}" includes="testSanity.xml"/>
+    	</copy>
+    </target>
+
+
+    <target name="deploy-ear" description="Deploy The atao.ear into JBoss Application Server" depends="set-jboss-deploy-path">
+        <record name="deploy-ear.log" action="start"/>
+            <move todir="${app.server.dir}/server/${jboss.deploy.path}/deploy/atao.ear/atao.warDir">
+                <fileset dir="${app.server.dir}/server/${jboss.deploy.path}/deploy/atao.ear/atao.war" />
+            </move>
+            <unzip src="${package.base}/atao.ear" dest="${app.server.dir}/server/${jboss.deploy.path}/deploy/atao.ear"/>
+            <unzip src="${app.server.dir}/server/${jboss.deploy.path}/deploy/atao.ear/atao.war" dest="${app.server.dir}/server/${jboss.deploy.path}/deploy/atao.ear/atao.warDir"/>
+            <delete file="${app.server.dir}/server/${jboss.deploy.path}/deploy/atao.ear/atao.war"/>
+            <move file="${app.server.dir}/server/${jboss.deploy.path}/deploy/atao.ear/atao.warDir" tofile="${app.server.dir}/server/${jboss.deploy.path}/deploy/atao.ear/atao.war" verbose="true"/>
+        <record name="deploy-ear.log" action="stop"/>
+        <if>
+            <equals arg1="${preserve.filesystem.assets}" arg2="true" />
+            <then>
+                <antcall target="preserve-file-system-assets"/>
+            </then>
+        </if>
+        <if>
+            <equals arg1="${preserve.static.contents}" arg2="true" />
+            <then>
+                <antcall target="preserve-static-contents"/>
+            </then>
+        </if>
+    </target>
+
+
+    <target name="export-db" if="db.from.revision">
+        <record name="export-db.log" action="start"/>
+            <echo message="=========> Export a fresh copy of revision ${db.from.revision} from ${svn.db.checkout.url}" level="info" />
+            <svnexport from="${svn.db.checkout.url}" to="${build.baseRoot}/db" revision="${db.from.revision}" />
+        <record name="export-db.log" action="stop"/>
+    </target>
+
+
+    <target name="export-local-configs" description="Get env-specific configs from repository">
+        <svnexport from="${svn.localprops.export.url}" to="." />
+
+        <!-- bamboo.build.dir will be manually substituted in all repo6 files -->
+        <!-- below this directory before the build is started. -->
+        <!-- in case this is run on windows, make all slashes forward -->
+        <pathconvert targetos="unix" property="bamboo.build.dir">
+                <path location="${basedir}"/>
+        </pathconvert>
+
+        <replace dir="." value="${bamboo.build.dir}">
+                <include name="localConfigFiles/**/*.properties*"/>
+                <include name="localEarBuild.properties"/>
+                <replacetoken>${bamboo.build.dir}</replacetoken>
+        </replace>
+
+        <!-- target.db is replaced just below here and set in -->
+        <!-- localEarBuild.properties from repo6 -->
+        <property file="localEarBuild.properties"/>
+
+        <echo message="target.db     = ${target.db}"/>
+        <echo message="svn.branch    = ${svn.branch}"/>
+        <echo message="atao.major    = ${atao.major}"/>
+        <echo message="atao.minor    = ${atao.minor}"/>
+        <echo message="atao.service  = ${atao.service}"/>
+        <echo message="atao.patch    = ${atao.patch}"/>
+        <echo message="atao.version  = ${atao.version}"/>
+        <echo message="bom.file.name = ${bom.file.name}"/>
+        <echo message="svn.ASSMNTcheckout.url = ${svn.ASSMNTcheckout.url}"/>
+        <echo message="ASSMNTfrom.revision    = ${ASSMNTfrom.revision}"/>
+
+        <replace dir="." value="${target.db}">
+                <include name="localConfigFiles/**/*.*"/>
+                <replacetoken>${target.db}</replacetoken>
+        </replace>
+
+        <!-- jbosss.home is replaced just below here -->
+        <replace dir="." value="${jboss.home}">
+                <include name="localConfigFiles/**/*.*"/>
+                <replacetoken>${jboss.home}</replacetoken>
+        </replace>
+
+        <!-- Read in and set local properties-->
+        <property name="build.base" value="${build.baseRoot}/atao"/>
+        <property name="buildtime.config.path" value="${global.config.path}/buildAndRelease"/>
+        <property name="packageinstall.config.path" value="${global.config.path}/packageAndInstall"/>
+        <property name="runtime.config.path" value="${global.config.path}/runtime"/>
+    </target>
+
+
+    <target name="import-libraries" description="Import client libraries..">
+       <property file="${package.base}/antInstallLocalSettings.properties"/>
+
+       <echo message="Creating ${package.base}/moduledependencies folder as a temporary work around..." level="info"/>
+       <mkdir dir="${package.base}/moduledependencies"/>
+       <echo message="target db for import libraries is ${target.db}" level="info"/>
+
+       <record name="libraryimport.log" action="start"/>
+           <ant antfile="${package.base}/install.xml" dir="${package.base}" target="install" inheritall="false">
+               <property name="install.target.list2" value="import-all"/>
+               <property name="target.db" value="${target.db}"/>
+               <property name="core.lib.dir"   value="${package.base}/libs"/>
+           </ant>
+       <record name="libraryimport.log" action="stop"/>
+    </target>
+
+
+    <target name="import-all-from-filesystem" description="Import db assets from checked-out filesystem">
+
+        <property file="localEarBuild.properties"/>
+        <property name="build.base" value="${build.baseRoot}/atao"/>
+        <property name="buildtime.config.path" value="${global.config.path}/buildAndRelease"/>
+
+        <record name="importall.log" action="start"/>
+    	    <ant antfile="${build.base}/build.xml" dir="${build.base}" inheritall="false">
+    	        <target name="import-all"/>
+            </ant>
+        <record name="importall.log" action="stop"/>
+
+        <!--move   file="${build.base}/antLocalSettings.properties"
+              tofile="${build.base}/antLocalSettings.properties.bak"
+              overwrite="true" />
+        <move   file="${build.base}/misc/buildfiles/custom.properties"
+              tofile="${build.base}/misc/buildfiles/custom.properties.bak"
+              overwrite="true" />
+        <move   file="${build.base}/WEB-INF/classes/custom.properties"
+              tofile="${build.base}/WEB-INF/classes/custom.properties.bak"
+              overwrite="true" />
+
+
+        <concat destfile="${build.base}/antLocalSettings.properties">
+            <filelist dir="${buildtime.config.path}" files="antLocalSettings.properties.importall,antLocalSettings.properties"/>
+       </concat>
+        <concat destfile="${build.base}/misc/buildfiles/custom.properties">
+            <filelist dir="${buildtime.config.path}" files="custom.properties.importall,custom.properties"/>
+       </concat>
+        <concat destfile="${build.base}/WEB-INF/classes/custom.properties">
+            <filelist dir="${buildtime.config.path}" files="custom.properties.importall,custom.properties"/>
+       </concat>
+
+        <echoproperties/>
+
+        <record name="importall.log" action="start"/>
+    	    <ant antfile="${build.base}/build.xml" dir="${build.base}" inheritall="false">
+    	        <target name="import-all"/>
+            </ant>
+        <record name="importall.log" action="stop"/>
+
+        <move   file="${build.base}/antLocalSettings.properties"
+              tofile="${build.base}/antLocalSettings.properties.importall"
+              overwrite="true" />
+        <move   file="${build.base}/misc/buildfiles/custom.properties"
+              tofile="${build.base}/misc/buildfiles/custom.properties.importall"
+              overwrite="true" />
+        <move   file="${build.base}/WEB-INF/classes/custom.properties"
+              tofile="${build.base}/WEB-INF/classes/custom.properties.importall"
+              overwrite="true" />
+
+        <move   file="${build.base}/antLocalSettings.properties.bak"
+              tofile="${build.base}/antLocalSettings.properties"
+              overwrite="true" />
+        <move   file="${build.base}/misc/buildfiles/custom.properties.bak"
+              tofile="${build.base}/misc/buildfiles/custom.properties"
+              overwrite="true" />
+        <move   file="${build.base}/WEB-INF/classes/custom.properties.bak"
+              tofile="${build.base}/WEB-INF/classes/custom.properties"
+              overwrite="true" /-->
+
+    </target>
+
+    <!-- drop (if there) and create a new user in the database -->
+    <target name="new-db-user" description="drop and re-create a DB user">
+        <echo message="Dropping and recreating DB user ${new.db.user}" level="info"/>
+        <echo message="url=${new.db.url} userid=${dba.user} password=${dba.pass} " level="info"/>
+        <sql
+            driver="oracle.jdbc.driver.OracleDriver"
+            url="${new.db.url}"
+            userid="${dba.user}"
+            password="${dba.pass}"
+            output="newDBuser.log"
+            delimiter="/"
+            delimitertype="row">
+            begin
+               createataouser('${new.db.user}');
+            end;
+            /
+        </sql>
+    </target>
+
+    <target name="new-db-from-filesystem" depends="checkout-atao, copy-buildtime-configfiles, setup-build-number, build, copy-assessments-files-for-newdb, new-db-user">
+        <record name="acdb.log" action="start"/>
+	    <ant antfile="${build.base}/build.xml" dir="${build.base}">
+                <target name="all-clean-database"/>
+            </ant>
+        <record name="acdb.log" action="stop"/>
+        <!-- skip the import-all-from-filesystem in build-bom if it was already done here in new-db-from-filesystem -->
+        <property name="skip-import-all-from-filesystem" value="skip"/>
+    </target>
+
+    <target name="prepare-appserver-for-deployment" depends="set-jboss-deploy-path" >
+        <!-- Decide whether to keep a backup of the previous jboss directory (may be safer but takes longer and uses more space) -->
+        <if>
+            <equals arg1="${backup.existing.deployment}" arg2="true" />
+            <then>
+                <!-- Have to do this in an antcall so atao.build.number won't be
+                 set to previous/old value for the remainder of this build -->
+                 <antcall target="backup-existing-deployment"/>
+            </then>
+        </if>
+        <!-- Delete previously deployed .ear directory so packaging step
+             can create new .ear dir & deploy assets/static there -->
+        <delete dir="${app.server.dir}/server/${jboss.deploy.path}/deploy/atao.ear" failonerror="true"/>
+        <!-- Verify that delete was successful-->
+        <available file="${app.server.dir}/server/${jboss.deploy.path}/deploy/atao.ear" property="appserver.ear.previous.notDeleted"/>
+        <fail if="appserver.ear.previous.notDeleted" message="Previous deployed appserver ear not deleted"/>
+    </target>
+
+    <target name="preserve-file-system-assets" description="copy file system assets from build to build" depends="set-jboss-deploy-path">
+        <if>
+            <equals arg1="${backup.existing.deployment}" arg2="true" />
+            <then>
+                <property file="${package.base}/antCommonSettings.properties"/>
+                <delete dir="assets.previous" failonerror="false"/>
+                <copy todir="assets.previous" overwrite="true">
+                    <fileset dir="${app.server.dir}.old/server/${jboss.deploy.path}/deploy/atao.ear/atao.war/assets" includes="**"/>
+                </copy>
+                <!-- Zip up a copy of the pre-build assets directory so it can be preserved as a build artifact-->
+                <zip destfile="fileAssets-prebuild.zip">
+                    <fileset dir="assets.previous" includes="**/*.*"/>
+                </zip>
+                <for list="${library.list}" param="library">
+                    <sequential>
+                        <echo message="=========> deleting Library:@{library} " level="info" />
+                        <delete dir="assets.previous/@{library}"/>
+                    </sequential>
+                </for>
+             	<copy todir="${app.server.dir}/server/${jboss.deploy.path}/deploy/atao.ear/atao.war/assets" overwrite="true">
+             		<fileset dir="assets.previous" includes="**"/>
+            	</copy>
+                <!-- post-build assets directory should also be preserved-->
+                <zip destfile="fileAssets-postbuild.zip">
+                    <fileset dir="${app.server.dir}/server/${jboss.deploy.path}/deploy/atao.ear/atao.war/assets" includes="**/*.*"/>
+                </zip>
+            </then>
+            <else>
+               <echo message="WARNING: preserve.filesystem.assets is set to true"  level="info"/>
+               <echo message="     but backup.existing.deployment is set to false" level="info"/>
+               <echo message=" ===> nothing will be preserved since jboss.old may not be available" level="info"/>
+            </else>
+        </if>
+    </target>
+
+
+    <target name="preserve-static-contents" description="copy static files from build to build" depends="set-jboss-deploy-path">
+        <delete dir="static.previous" failonerror="false"/>
+        <copy todir="static.previous" overwrite="true">
+            <fileset dir="${app.server.dir}.old/server/${jboss.deploy.path}/deploy/atao.ear/atao.war/static" includes="**"/>
+        </copy>
+        <!-- Zip up a copy of the pre-build assets directory so it can be preserved as a build artifact-->
+        <zip destfile="staticFiles-prebuild.zip">
+            <fileset dir="static.previous" includes="**/*.*"/>
+        </zip>
+        <available file="Preserve-Static-Contents.sh" property="static.script.present"/>
+        <if>
+        <equals arg1="${static.script.present}" arg2="true" />
+        <then>
+            <fixcrlf srcDir="${basedir}" includes="Preserve-Static-Contents.sh" eol="lf"/>
+            <chmod file="${basedir}/Preserve-Static-Contents.sh" perm="ugo+rwx"/>
+            <exec executable="${basedir}/Preserve-Static-Contents.sh" failonerror="yes">
+                <arg value="${jboss.deploy.path}"/>
+            </exec>
+        </then>
+        <else>
+            <echo message="=========> Didn't find file Preserve-Static-Contents.sh." level="info" />
+            <echo message="=========> Can't Copy static contents.." level="info" />
+            <fail message="Static Content Copy failed!" />
+        </else>
+        </if>
+        <!-- post-build static directory should also be preserved-->
+        <zip destfile="staticFiles-postbuild.zip">
+            <fileset dir="${app.server.dir}/server/${jboss.deploy.path}/deploy/atao.ear/atao.war/static" includes="**/*.*"/>
+        </zip>
+    </target>
+
+
+    <target name="run-upgrade-sql">
+        <record name="Upgrade_Script.log" action="start"/>
+            <xmlproperty file="${app.server.dir}/server/${jboss.deploy.path}/deploy/atao-ds.xml"/>
+            <property name="db.user" value="${datasources.local-tx-datasource.user-name}"/>
+            <property name="db.pass" value="${datasources.local-tx-datasource.password}"/>
+
+            <echo message="User: ${db.user}"/>
+            <echo message="Password: ${db.pass}"/>
+
+            <sqlplus logon="${db.user}/${db.pass}@${db.tnsname}" start="${build.base}/misc/sqlscripts/upgrades/${upgrade.sql}" failonerror="true"/>
+        <record name="Upgrade_Script.log" action="stop"/>
+    </target>
+
+
+    <target name="run-cleanup-sql">
+        <record name="Table_Cleanup_Script.log" action="start"/>
+            <xmlproperty file="${app.server.dir}/server/${jboss.deploy.path}/deploy/atao-ds.xml"/>
+            <property name="db.user" value="${datasources.local-tx-datasource.user-name}"/>
+            <property name="db.pass" value="${datasources.local-tx-datasource.password}"/>
+
+            <echo message="User: ${db.user}"/>
+            <echo message="Password: ${db.pass}"/>
+
+            <sqlplus logon="${db.user}/${db.pass}@${db.tnsname}" start="${build.base}/misc/sqlscripts/${cleanup.sql}" failonerror="true"/>
+        <record name="Table_Cleanup_Script.log" action="stop"/>
+    </target>
+
+
+    <target name="run-webtest-sanity" depends="copy-webtest-file">
+        <record name="webtest.log" action="start"/>
+            <ant antfile="${build.base}/antFunctionalTests.xml" dir="${build.base}" inheritall="false" target="functional-test">
+            	<property name="webtest.testfile" value="testSanity"/>
+            </ant>
+        <record name="webtest.log" action="stop"/>
+    </target>
+
+
+    <target name="setup-assessmentbuild-number" if="ASSMNTfrom.revision">
+        <svnrevget path="${build.baseRoot}/assessments" revisionproperty="assmnt.chkout.revision"/>
+    	<echo> Checked-out Revision of Code: ${assmnt.chkout.revision} </echo>
+        <echo> Build number root           : ${build.number.root} </echo>
+        <property name="assmnt.build.number" value="${build.number.root}.${assmnt.chkout.revision}.1"/>
+        <echo> set atao.build.number to ${assmnt.build.number} in ${build.baseRoot}/assessments/antLocalSettings.properties </echo>
+        <echo file="${build.baseRoot}/assessments/antLocalSettings.properties" append="true">atao.build.number=${assmnt.build.number}</echo>
+        <property file="${build.baseRoot}/assessments/antLocalSettings.properties"/>
+
+        <for list="${assessment.jar.list}" param="jarname">
+            <sequential>
+                <echo message="=========> updating entry in assessment.jar.list:@{jarname} " level="info" />
+                <update-assessment-jar-name the.jar="@{jarname}" />
+                <echo message="" />
+            </sequential>
+        </for>
+
+        <if>
+           <equals arg1="${ASSMNT.build}" arg2="true"/>
+           <then>
+           	<echo file="${build.base}/antGlobalLocalSettings.properties" append="true">atao.assessments.build.number=${assmnt.build.number}</echo>
+           </then>
+        </if>
+    </target>
+
+
+    <target name="setup-build-number">
+        <svnrevget path="${build.base}" revisionproperty="chkout.revision"/>
+    	<echo> Checked-out Revision of Code: ${chkout.revision} </echo>
+        <echo> Build number root           : ${build.number.root} </echo>
+        <property name="atao.build.number" value="${atao.version}.${chkout.revision}"/>
+        <echo> set atao.build.number to ${atao.build.number} in antGlobalLocalSettings.properties </echo>
+        <replaceregexp file="${build.base}/antGlobalLocalSettings.properties" match="atao.build.number=.*" replace="atao.build.number=${atao.build.number}" flags="g" byline="true"/>
+        <property file="${build.base}/antGlobalLocalSettings.properties"/>
+
+        <for list="${atao.jar.list}" param="jarname">
+            <sequential>
+                <echo message="=========> updating entry in atao.jar.list:@{jarname} " level="info" />
+                <update-atao-jar-name the.jar="@{jarname}" />
+                <echo message="" />
+            </sequential>
+        </for>
+
+        <antcall target="setup-assessmentbuild-number" />
+    </target>
+
+
+    <target name="set-jboss-deploy-path">
+        <condition property="jboss.deploy.path" value="default">
+            <equals arg1="${ant.java.version}" arg2="1.4" />
+        </condition>
+        <condition property="jboss.deploy.path" value="production">
+            <equals arg1="${ant.java.version}" arg2="1.5" />
+        </condition>
+        <condition property="jboss.deploy.path" value="production">
+            <equals arg1="${ant.java.version}" arg2="1.6" />
+        </condition>
+        <echo message="Java version = ${ant.java.version} so deploy path = server/${jboss.deploy.path}/deploy"/>
+    </target>
+
+
+    <target name="setup-static-directory" depends="set-jboss-deploy-path" >
+        <copy todir="${app.server.dir}/server/${jboss.deploy.path}/deploy/atao.ear/atao.war/applications" overwrite="true">
+            <fileset dir="${package.base}/core/static"/>
+        </copy>
+    </target>
+
+
+    <target name="start-jboss43" description="Start the JBoss 4.3 server." depends="cleanout-jboss-generated-files">
+        <echo message="===> java.home value is ${java.home.dir}" level="info" />
+
+        <available file="antRunAsync.sh" property="antRunAsync.script.present"/>
+        <if>
+        <equals arg1="${antRunAsync.script.present}" arg2="true" />
+        <then>
+              <fixcrlf srcDir="${basedir}" includes="antRunAsync.sh" eol="lf"/>
+
+              <chmod file="${basedir}/antRunAsync.sh" perm="ugo+rwx"/>
+
+	      <exec executable="${basedir}/antRunAsync.sh" failonerror="yes">
+   	      <env key="ANTRUN_NOHUP" value="true" />
+  	      <arg value="run.sh" />
+  	      <arg line=" -b 0.0.0.0"/>
+  	      <arg line="-g ${cluster.group}"/>
+  	      <arg line="-u ${udp.address}"/>
+ 	      </exec>
+
+	      <property name="startup.delay" value="240"/>
+              <echo message="=========> Waiting ${startup.delay} seconds for ${app.server.dir} to start" level="info" />
+              <sleep seconds="${startup.delay}" />
+        </then>
+        <else>
+              <echo message="=========> Didn't find file antRunAsync.sh." level="info" />
+              <echo message="=========> Can't Start the JBoss 4.3 server." level="info" />
+              <fail message="JBoss 4.3 server Start-Up failed!" />
+        </else>
+        </if>
+    </target>
+
+
+    <target name="stop-jboss43" description="Stop the Application Server">
+        <echo message="===> app.server.dir value is ${app.server.dir}" level="info" />
+        <echo message="===> deploy.configuration.dir value is ${deploy.configuration.dir}" level="info" />
+        <echo message="=========> Stopping JBoss Server at ${jboss.host} : ${jboss.jndi.port}" level="info" />
+        <java dir="${app.server.dir}/bin" classname="org.jboss.Shutdown" fork="true">
+            <arg line="--server=${jboss.host}:${jboss.jndi.port}"/>
+            <arg value="--user" />
+            <arg value="admin" />
+            <arg value="--password" />
+            <arg value="admin" />
+            <classpath>
+                <pathelement path="${app.server.dir}/bin/shutdown.jar"/>
+                <pathelement path="${app.server.dir}/client/jbossall-client.jar"/>
+            </classpath>
+        </java>
+        <property name="shutdown.delay" value="35"/>
+        <echo message="=========> Waiting ${shutdown.delay} seconds for ${app.server.dir} to stop" level="info" />
+        <sleep seconds="${shutdown.delay}"/>
+    </target>
+
+
+    <target name="unzip-and-package-release">
+        <if>
+            <!--Decide whether to keep a backup of the previous
+                checkout directory (may be safer but uses more space) -->
+            <equals arg1="${keep.build.files}" arg2="true" />
+            <then>
+                <!-- First delete previous backup workarea -->
+                <delete dir="${package.base}.old" failonerror="false"/>
+                <!-- then move previous workarea to backup -->
+                <move file="${package.base}" tofile="${package.base}.old" failonerror="false"/>
+            </then>
+            <else>
+                <delete dir="${package.base}" failonerror="true"/>
+            </else>
+        </if>
+        <!-- Now create a packageWorkDir -->
+        <mkdir dir="${package.base}"/>
+        <!-- And unzip the release zip into package.base -->
+    	<unzip src="${build.base}/relWorkArea/${atao.build.number}.zip" dest="${package.base}"/>
+        <!-- Copy the config files for packaging -->
+        <copy todir="${package.base}" verbose="true" overwrite="true">
+            <fileset dir="${packageinstall.config.path}" includes="antLocalSettings.properties antPackageLocalSettings.properties"/>
+        </copy>
+        <copy todir="${package.base}/WEB-INF/classes" verbose="true" overwrite="true">
+            <fileset dir="${packageinstall.config.path}" includes="log4j.properties atao.hibernate.cfg.xml"/>
+        </copy>
+        <copy todir="${package.base}/libs" verbose="true" overwrite="true">
+            <fileset dir="${packageinstall.config.path}" includes="atao.hibernate.cfg.xml"/>
+        </copy>
+        <!-- Now run the package.xml to create the atao.ear -->
+        <record name="package-ear-release.log" action="start"/>
+            <ant antfile="${package.base}/package.xml" dir="${package.base}" inheritall="false" target="package-ear-release">
+            </ant>
+        <record name="package-ear-release.log" action="stop"/>
+    </target>
+
+
+   <macrodef name="update-atao-jar-name">
+      <attribute name="the.jar" default="foo" />
+      <sequential>
+        <echo message="${build.base}/${bom.file.name} match=atao-@{the.jar}.*\.jar replace=atao-@{the.jar}-${build.number.root}.${chkout.revision}.${build.number.iteration}.jar" />
+        <!-- Had to do the replacement in two steps - otherwise the regex is "greedy" and replaces the whole line ("byline" parameter of "replaceregexp" task did not seem to work) -->
+        <replaceregexp file="${build.base}/${bom.file.name}" match='output/atao-@{the.jar}.*\.jar" *dest' replace='output/atao-@{the.jar}-${build.number.root}.${chkout.revision}.${build.number.iteration}.jar" dest' />
+        <replaceregexp file="${build.base}/${bom.file.name}" match='lib/atao-@{the.jar}.*\.jar' replace='lib/atao-@{the.jar}-${build.number.root}.${chkout.revision}.${build.number.iteration}.jar' />
+      </sequential>
+   </macrodef>
+
+
+   <macrodef name="update-assessment-jar-name">
+      <attribute name="the.jar" default="foo" />
+      <sequential>
+        <echo message="${build.base}/${bom.file.name} match=assessments.@{the.jar}.*\.jar replace=assessments.@{the.jar}-${build.number.root}.${assmnt.chkout.revision}.${build.number.iteration}.jar" />
+        <!-- Had to do the replacement in two steps - otherwise the regex is "greedy" and replaces the whole line ("byline" parameter of "replaceregexp" task did not seem to work) -->
+        <replaceregexp file="${build.base}/${bom.file.name}" match='sourceFile="WEB-INF/lib/atao-assessments.@{the.jar}.*\.jar" *dest' replace='sourceFile="WEB-INF/lib/atao-assessments.@{the.jar}-${build.number.root}.${assmnt.chkout.revision}.${build.number.iteration}.jar" dest' />
+        <replaceregexp file="${build.base}/${bom.file.name}" match='destinationFile="WEB-INF/lib/atao-assessments.@{the.jar}.*\.jar' replace='destinationFile="WEB-INF/lib/atao-assessments.@{the.jar}-${build.number.root}.${assmnt.chkout.revision}.${build.number.iteration}.jar' />
+      </sequential>
+   </macrodef>
+
+
+    <target name="verify-description-file">
+        <available file="${build.base}/${bom.file.name}" property="description.file.found"/>
+        <fail unless="description.file.found"
+        message="Description file ${build.base}/${bom.file.name} not found - please check the value of bom.file.name "/>
+    </target>
+
+
+    <target name="verify-processes">
+        <exec executable="verifyProcesses.sh" os=" Linux "/>
+        <property file="processes.properties"/>
+        <fail message="Xvfb not running - please start it (as root) before continuing">
+            <condition>
+                <isfalse value="${xvfb.running}"/>
+            </condition>
+        </fail>
+        <fail message="ColdFusion is running - please kill all CF processes before continuing">
+            <condition>
+                <istrue value="${coldfusion.running}"/>
+            </condition>
+        </fail>
+    </target>
+
+
+    <target name="tag-branch" description="This target will tag the codeline based on the SR for which BOM is being built">
+                <propertyregex property="branchname" input="${svn.branch}" regexp="[^/]*$" select="\0" casesensitive="false" />
+                <propertyregex property="branchname_assmnt" input="${svn.ASSMNTcheckout.url}" regexp="([^/]*)/assessments$" select="\1" casesensitive="false" />
+
+		<property name="bomName" value="${atao.major}.${atao.minor}.${atao.service}.${atao.patch}"/>
+
+		<property name="tagName" value="${bomName}"/>
+		<antcall target="delete-tag" inheritall="true"/>
+
+		<tstamp>
+			 <format property="TODAY" pattern="yyyy-MM-dd HH:mm:ss" />
+		</tstamp>
+		<if>
+                <equals arg1="${branchname}" arg2="trunk" />
+                <then>
+                        <property name="srcUrl" value="file:///svnroot/repositories/trunk"/>
+                </then>
+                    <else>
+                        <property name="srcUrl" value="file:///svnroot/repositories/branches/${branchname}"/>
+                    </else>
+		</if>
+		<if>
+                <equals arg1="${branchname_assmnt}" arg2="trunk" />
+                <then>
+                        <property name="srcUrl_assmnt" value="file:///svnroot/repository4/trunk"/>
+                </then>
+                    <else>
+                        <property name="srcUrl_assmnt" value="file:///svnroot/repository4/branches/${branchname_assmnt}"/>
+                    </else>
+		</if>
+
+                <svnrevget path="${build.baseRoot}/assessments" revisionproperty="assmnt.chkout.revision"/>
+
+		<property name="destUrl" value="file:///svnroot/repositories/tags/${tagName}"/>
+		<property name="comment" value="Tagging ${branchname} for ${bomName} using revision ${chkout.revision} on ${TODAY}"/>
+
+		<echo message="=========> comment: ${comment} " level="info" />
+
+		<sshexec host="it-apps-4.corp.unicru.com" username="rebuild" keyfile="${user.home}/.ssh/id_rsa" trust="true" passphrase=""
+			command="svn copy -r ${chkout.revision} ${srcUrl} ${destUrl} -m '${comment}'"/>
+
+		<property name="destUrl_assmnt" value="file:///svnroot/repository4/tags/${tagName}"/>
+		<property name="comment_assmnt" value="Tagging assessments branch ${branchname_assmnt} for ${bomName} using revision ${assmnt.chkout.revision} on ${TODAY}"/>
+
+		<echo message="=========> comment: ${comment_assmnt} " level="info" />
+
+		<sshexec host="it-apps-4.corp.unicru.com" username="rebuild" keyfile="${user.home}/.ssh/id_rsa" trust="true" passphrase=""
+			command="svn copy -r ${assmnt.chkout.revision} ${srcUrl_assmnt} ${destUrl_assmnt} -m '${comment_assmnt}'"/>
+
+	</target>
+
+	<target name="delete-tag" description="This target will delete the tag if already present">
+		<tstamp>
+			 <format property="TODAY" pattern="yyyy-MM-dd HH:mm:ss" />
+		</tstamp>
+		<property name="tagUrl" value="file:///svnroot/repositories/tags/${tagName}"/>
+		<property name="comment" value="Deleted tag ${tagName} on ${TODAY}"/>
+
+		<sshexec host="it-apps-4.corp.unicru.com" username="rebuild" keyfile="${user.home}/.ssh/id_rsa" trust="true" passphrase=""
+			command="svn delete ${tagUrl} -m '${comment}'" failonerror="false"/>
+
+		<property name="tagUrl_assmnt" value="file:///svnroot/repository4/tags/${tagName}"/>
+		<property name="comment_assmnt" value="Deleted assessment tag ${tagName} on ${TODAY}"/>
+
+		<sshexec host="it-apps-4.corp.unicru.com" username="rebuild" keyfile="${user.home}/.ssh/id_rsa" trust="true" passphrase=""
+			command="svn delete ${tagUrl_assmnt} -m '${comment_assmnt}'" failonerror="false"/>
+	</target>
+
+    <target name="create-checkout-setup">
+            <echo message="=========> Check-out a fresh copy of revision ${CIfrom.revision} from ${svn.checkout.url}" level="info" />
+            <svncheckout from="${svn.checkout.url}" to="${build.base}" revision="${CIfrom.revision}" />
+			<antcall target="checkout-assessments" />
+			<antcall target="copy-buildtime-configfiles"/>
+			<antcall target="setup-build-number"/>
+			<antcall target="build-no-release"/>
+    </target>
+
+
+	<target name="checkout-db-revisions" depends="create-checkout-setup">
+            <echo message="==> Export a fresh copy of revision ${db.start.revision} from ${svn.db.checkout.url1} AND revision ${db.end.revision} from ${svn.db.checkout.url2}" level="info" />
+            <parallel>
+                <svnexport from="${svn.db.checkout.url2}" to="${build.baseRoot}/new" revision="${db.end.revision}" />
+                <svnexport from="${svn.db.checkout.url1}" to="${build.baseRoot}/old" revision="${db.start.revision}" />
+            </parallel>
+            <mkdir dir="${build.baseRoot}/export"/>
+	</target>
+
+    <target name="get-updated-assets-for-translations" description="" depends="checkout-db-revisions">
+        <property file="localEarBuild.properties"/>
+        <property name="build.base" value="${build.baseRoot}/atao"/>
+        <property name="buildtime.config.path" value="${global.config.path}/buildAndRelease"/>
+
+        <!-- For duration of import only, get rid of existing properties -->
+        <move   file="${build.base}/antLocalSettings.properties"               tofile="${build.base}/antLocalSettings.properties.bak"              overwrite="true" />
+
+		<propertyfile file="${buildtime.config.path}/antLocalSettings.properties.misc">
+			<entry key="asset.dir" value="${build.baseRoot}/new" />
+			<entry key="old.asset.dir" value="${build.baseRoot}/old"/>
+			<entry key="export.dir" value="${build.baseRoot}/export"/>
+		</propertyfile>
+
+        <!-- Create new property files by concatenating the additional properties
+             required by import-all with the existing property files for this build -->
+        <concat destfile="${build.base}/antLocalSettings.properties">
+            <filelist dir="${buildtime.config.path}" files="antLocalSettings.properties.misc,antLocalSettings.properties"/>
+       </concat>
+
+        <record name="assetcompare.log" action="start"/>
+    	    <ant antfile="${build.base}/build.xml" dir="${build.base}" inheritall="false">
+    	        <target name="asset-compare"/>
+            </ant>
+        <record name="assetcompare.log" action="stop"/>
+
+        <!-- save copy of import-all configs -->
+        <move   file="${build.base}/antLocalSettings.properties"               tofile="${build.base}/antLocalSettings.properties.misc"              overwrite="true" />
+        <!-- restore originals -->
+        <move   file="${build.base}/antLocalSettings.properties.bak"               tofile="${build.base}/antLocalSettings.properties"              overwrite="true" />
+    </target>
+</project>

@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<!--RE-796 deletion of applicant snapshots -->
+<!-- This plan is specific to cleanup application snapshot folder (/exports/rebuild/lbamN) for long builds.-->
+
+<project name="build-cleanup-appsnapshot" default="cleanup-appsnapshot" basedir=".">
+
+     <property name="app.server.name" value="kap-us-lbam1.us.kronos.com"/>
+     <property name="app.user.name" value="rebuild"/>
+     <property name="app.user.password" value="Rb20081216"/>
+     <property name="app.snapshot.name"   value="lbam1"/>
+     <property name="app.snapshot.home"     value="/exports/rebuild"/>
+
+     <target name="cleanup-appsnapshot"  description="Clean up application snapshot folder">
+
+         <property name="app.cleanup.time" value="10"/>
+
+         <sshexec host="kap-us-${app.snapshot.name}.us.kronos.com"
+	          username="${app.user.name}"
+	          password="${app.user.password}"
+	          trust="true"
+	          failonerror="true"
+	          command="[ -d ${app.snapshot.home}/${app.snapshot.name} ] &amp;&amp; cd ${app.snapshot.home}/${app.snapshot.name} &amp;&amp; rm -rf ApplicantSnapshot/*" />
+
+         <echo message="Waiting  for ${app.cleanup.time} seconds for cleanup of appsnapshot on kap-us-${app.snapshot.name}.us.kronos.com"/>
+		 <sleep seconds="${app.cleanup.time}"/>
+		 <echo message="Cleanup of application snapshot ${app.snapshot.name} on kap-us-${app.snapshot.name}.us.kronos.com completed"/>
+	  </target>
+</project>

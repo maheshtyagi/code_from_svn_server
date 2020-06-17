@@ -1,0 +1,20 @@
+# hostID and controlPortID for the Grid hub
+hub.host=ki-bb-se1.in.kronos.com
+se.control.port=7171
+hubURL=http://${hub.host}:${se.control.port}
+
+# are we only running locally?
+# dont-use-agent-machine=1
+
+# Selenium Grid Retries; one entry per retry attempt
+retries=1,2
+
+# remote agent machines in this grid and their RC port properties; RC properties are defined as
+# <machine name from remote.agent.list>.port=<portID>; port values need to match those in RemoteSelenium/...
+remote.agent.list=ki-bb-se2.in.kronos.com,ki-bb-se3.in.kronos.com
+ki-bb-se2.in.kronos.com.port=2000
+ki-bb-se3.in.kronos.com.port=3000
+
+# hostID and portID for local RC instance
+remote.ant.host=ki-bb-se1.in.kronos.com
+remote.ant.port=1000

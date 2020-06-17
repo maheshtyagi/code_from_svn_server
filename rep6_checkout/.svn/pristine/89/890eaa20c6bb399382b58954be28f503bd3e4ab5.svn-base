@@ -1,0 +1,105 @@
+<?xml version="1.0"?>
+<project name="utilities" default="tag-branch" basedir=".">
+
+    <taskdef resource="net/sf/antcontrib/antlib.xml" />
+
+    <!-- The Svn4Ant distribution .jar file and all
+         dependents must be in ant's classpath -->
+    <taskdef resource="org/jwaresoftware/svn4ant/install/antlib.xml"/>
+
+    <target name="create-hotfix-branch" description="Automatic creation of hotfix branch, canonical DB user, update BOM and short build plans">
+    	 <antcall target="copy-hfbranch-from-SR"/>
+		 <antcall target="new-db-user"/>
+	</target>
+
+    <target name="export-local-configs" description="Get env-specific configs from repository">
+        <svnexport from="${svn.localprops.export.url}" to="." />
+        <!-- Read in and set local properties-->
+        <property file="localEarBuild.properties"/>
+		<property name="serviceRelease" value="${atao.service.release}"/>
+    </target>
+
+    <target name="copy-hfbranch-from-SR" description="creates a new hotfix branch from last SR tag">
+		<propertyregex property="bomName" input="${bom.file.name}" regexp="([^_]*)\.xml" select="\1" casesensitive="false" />
+		<propertyregex property="buildName" input="${build.number.root}" regexp="\." replace="" casesensitive="false" />
+		<property name="tagName" value="${buildName}${bomName}"/>
+		<property name="branchName" value="${tagName}HOTFIXES"/>
+		<property name="srcUrl" value="file:///svnroot/repositories/tags/${tagName}"/>
+		<property name="destUrl" value="file:///svnroot/repositories/branches/${tagName}HOTFIXES"/>
+		<property name="comment" value="Creating branch ${tagName}HOTFIXES from tags/${tagName}"/>
+		<sshexec host="kap-us-hsgsvn.us.kronos.com" username="rebuild" keyfile="${user.home}/.ssh/id_rsa" trust="true" passphrase=""
+		command="svn copy ${srcUrl} ${destUrl} -m '${comment}'"/>
+
+		<antcall target="update-Bamboo-Plans" inheritall="true"/>
+    </target>
+
+	<target name="update-Bamboo-Plans">
+		<property name="checkInComment" value="Updating configurations on creation of ${branchName}"/>
+		<echo> aTAO service Release: ${serviceRelease} </echo>
+		<svncredential id="login.rebuild" username="rebuild">
+		  <passphrase></passphrase>
+		  <keyfile value="${user.home}/.ssh/id_rsa"/>
+		</svncredential>
+
+		<!-- UPDATING HF-BOM Plan -->
+		<mkdir dir="hotfix"/>
+        <svncheckout credential="login.rebuild" from="${svn.bomprops.checkout.url}" to="hotfix" />
+
+		<property name="hfLocalEar" value="hotfix/localEarBuild.properties"/>
+		<property name="buildNoNew" value="8.6.${serviceRelease}"/>
+		<property name="bomNew" value="BOM_8.6_SR${serviceRelease}HF1.xml"/>
+
+		<replaceregexp file="${hfLocalEar}" match="svn.branch=.*" replace="svn.branch=svn://svn.deploy.com/repositories/branches/${branchName}" flags="g" byline="true"/>
+		<replaceregexp file="${hfLocalEar}" match="build.number.root=.*" replace="build.number.root=${buildNoNew}" flags="g" byline="true"/>
+		<replaceregexp file="${hfLocalEar}" match="bom.file.name=.*" replace="bom.file.name=misc/boms/${bomNew}" flags="g" byline="true"/>
+
+		<svncommit credential="login.rebuild" path="${hfLocalEar}" message="${checkInComment}"/>
+		<delete dir="hotfix"/>
+
+		<!-- UPDATING CIBUILD Plan -->
+		<mkdir dir="cibuild"/>
+        <svncheckout credential="login.rebuild" from="${svn.shortprops.checkout.url}" to="cibuild" />
+
+		<property name="ciLocalEar" value="cibuild/localEarBuild.properties"/>
+
+		<replaceregexp file="${ciLocalEar}" match="svn.branch=.*" replace="svn.branch=svn://svn.deploy.com/repositories/branches/${branchName}" flags="g" byline="true"/>
+
+		<svncommit credential="login.rebuild" path="${ciLocalEar}" message="${checkInComment}"/>
+		<delete dir="cibuild"/>
+	</target>
+
+	<target name="backup-existing-db" description="export current database" depends="">
+		<record name="export_db.log" action="start"/>
+			<tstamp>
+				<format property="dumpDate" pattern="yyyyMMddHHmm" locale="en,US"/>
+			</tstamp>
+			<echo message="Running EXP as ${new.db.user}/${new.db.user}@${db.tnsname} file=${new.db.user}-${dumpDate}.dmp owner=${new.db.user}"/>
+			<exec dir="${basedir}" executable="exp" failonerror="true">
+			 	<arg line="${new.db.user}/${new.db.user}@${db.tnsname} file=${new.db.user}-${dumpDate}.dmp owner=${new.db.user}"/>
+			</exec>
+		<record name="export_db.log" action="stop"/>
+	</target>
+
+    <target name="new-db-user" description="drop and re-create a DB user" depends="backup-existing-db">
+        <echo message="Dropping and recreating DB user ${new.db.user}" level="info"/>
+        <!-- IMPORTANT! This assumes tablespace already exists with same name as user -->
+        <sql
+            driver="oracle.jdbc.driver.OracleDriver"
+            url="jdbc:oracle:thin:@kdb-us-hsgeld01.us.kronos.com:1521:bvteng"
+            userid="${dba.user}"
+            password="${dba.pass}"
+            output="newDBuser.log">
+            <![CDATA[
+                drop user ${new.db.user} cascade;
+                create user ${new.db.user} identified by ${new.db.user} default tablespace ${new.db.user} temporary tablespace TEMP1;
+                grant connect, resource, imp_full_database, exp_full_database to ${new.db.user};
+                grant create any synonym, drop any synonym, create any view to ${new.db.user};
+                alter user ${new.db.user} default role all;
+                grant execute on ctx_ddl to ${new.db.user};
+                revoke unlimited tablespace from ${new.db.user};
+                alter user ${new.db.user} quota unlimited on ${new.db.user};
+            ]]>
+        </sql>
+    </target>
+
+</project>

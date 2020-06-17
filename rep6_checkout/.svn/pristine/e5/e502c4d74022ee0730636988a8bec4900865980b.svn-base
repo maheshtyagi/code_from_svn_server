@@ -1,0 +1,127 @@
+#############################################################################
+#Atao Custom Properties
+#############################################################################
+
+#############################################################################
+# Database Definition
+#############################################################################
+# TODO: Oracle Specific for now
+#############################################################################
+NEW_SR0HF1.atao.persist.dataSource=java:ataoDS
+NEW_SR0HF1.hibernate.dialect=org.hibernate.dialect.Oracle9Dialect
+NEW_SR0HF1.atao.db.type=oracle
+#Application Server will use the logical db specified here
+atao.persist.logical.db=NEW_SR0HF1
+
+
+
+#############################################################################
+#Atao Location of files imported/exported   (aka coldfusion.root/mx.context)
+# e.g. C:\CFusionMX7\Servers\Ci-ear\ci-war (aka is root.context)
+#############################################################################
+atao.assets.files=/home/app2/jboss43-8180/jboss-as/server/production/deploy/atao.ear/atao.war/static
+
+
+
+#############################################################################
+# Atao Location of assets directory 
+# Substitute path up to \\core\\assets as appropriate for your environment
+#############################################################################
+# atao.assets
+#
+# Developer default             C:\\eng\\atao\\core\\assets
+#
+# Single no ear 		C:/CFusionMX7/wwwroot/WEB-INF/classes/assets
+#
+# Multi top level asset dir	C:/CFusionMX7/Servers/ci_cfusion.ear/ci_fusion.war/assets 
+#
+# Multi classes asset dir	C:\CFusionMX7\Servers\Ci-ear\ci-war\WEB-INF\classes\assets 
+#############################################################################
+
+atao.assets=/home/app2/jboss43-8180/jboss-as/server/production/deploy/atao.ear/atao.war/assets
+
+
+
+
+#############################################################################
+# Directory containing pdf forms
+#############################################################################
+atao.assets.pdfs=/home/app2/jboss43-8180/jboss-as/server/production/deploy/atao.ear/atao.war/hmc/form
+#############################################################################
+# Directory containing ob static files
+#############################################################################
+atao.assets.ob.files=/home/app2/jboss43-8180/jboss-as/server/production/deploy/ob.ear/ob.war
+#############################################################################
+# Hibernate properties
+#############################################################################
+
+hibernate.dialect=org.hibernate.dialect.Oracle9Dialect
+
+hibernate.cache.use_query_cache=true
+hibernate.c3p0.idle_test_period=1800
+hibernate.c3p0.timeout=1800
+hibernate.c3p0.max_size=400
+hibernate.c3p0.min_size=100
+hibernate.c3p0.max_statements=0
+
+hibernate.max_fetch_depth=3
+
+##############################################################################
+#Reports & Analytics Stuff
+##############################################################################
+cwr.reports.webservice.stub=com.deploy.application.report.plugin.FieldReportsTest
+ 
+#####################################################
+# enables Oracle text indices -- should be set to true when using an Oracle database
+#####################################################
+postingSearch.useOracleIndex=true
+
+###########################################################
+# Set the location of App Server  Home 
+# /home/app2/jboss405 - Place the path at this location.
+# This will need to be 
+###########################################################
+atao.import.clientImport.create.dbSequence=/home/app2/jboss43-8180/jboss-as/server/production/deploy/atao.ear/atao.war/misc/sqlscripts/atao_seqfinder.sql
+
+
+#config file for PGP
+PGPConfigFile.path=/home/app2/jboss43-8180/jboss-as/server/production/deploy/atao.ear/atao.war/keys/
+
+# Per conversation with Ed Bi and Keith - clean out libraries before importing
+atao.import.deleteLibraries=true
+
+# Adding this to enable updating of system variables
+SystemVariable.EditableLibTypes=0,1,2
+
+#Adding to help funct tests
+ClientVariable.ExternalServerReferencePath=http://ki-ce-app2.in.kronos.com:8180/index.jsp?
+
+SystemVariable.HMCURL=http://ki-ce-app2.in.kronos.com:8180/hmc
+SystemVariable.InternalServerReference=http://localhost:8180
+SystemVariable.ExternalServerReference=http://ki-ce-app2.in.kronos.com:8180
+SystemVariable.ExternalServerContextPath=/
+atao.ignore.import.VersionCheck=true
+
+#############################################################################
+# aTAO hibernate configuration .... 
+#############################################################################
+atao.hibernate.config=atao.hibernate.cfg.xml
+
+#############################################################################
+# Hibernate Factory implementation. Web Apps should always use DataSource 
+#############################################################################
+atao.hibernate.factory.implementation=com.deploy.atao.persist.hibernate.HibernateFactoryDataSource
+
+#############################################################################
+model.jar.location=../lib
+
+# Adding "atao.deploymentmode" per email from Abhay, 2008 12 05
+atao.deploymentmode=production
+atao.js_css_version=4740001
+
+# Adding per email from Abhay, 12 May 2009 - this should be overridden
+# for any environment running automated tests
+SystemVariable.PageCachingEnabled=false
+
+# Adding "atao.automatedTestMode" per email from John G, 2009 12 18
+atao.automatedTestMode=true

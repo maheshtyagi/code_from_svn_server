@@ -1,0 +1,57 @@
+#############################################################################
+#Atao Custom Properties
+#############################################################################
+${target.db}.atao.persist.jdbc.driver=oracle.jdbc.OracleDriver
+${target.db}.atao.persist.jdbc.url=jdbc:oracle:oci:@kdbushsgeld01
+${target.db}.atao.persist.jdbc.user=${target.db}
+${target.db}.atao.persist.jdbc.pass=${target.db}
+${target.db}.hibernate.dialect=org.hibernate.dialect.Oracle10gDialect
+${target.db}.atao.assets=${bamboo.build.dir}/checkout/atao/assets
+${target.db}.atao.db.type=Oracle
+
+atao.assets=/home/rebuild/jboss/standalone/deployments/atao.ear/atao.war/assets
+atao.assets.files=/home/rebuild/jboss/standalone/deployments/atao.ear/atao.war/static
+atao.assets.pdfs=/home/rebuild/jboss/standalone/deployments/atao.ear/atao.war/hmc/form
+
+atao.persist.logical.db=${target.db}
+
+
+atao.jibx.db_expimplog.enable=false
+
+
+#############################################################################
+# Hibernate properties
+#############################################################################
+
+atao.virtualAssetPath=/assets
+
+###for c3po connection caching
+hibernate.cache.use_query_cache=true
+
+hibernate.max_fetch_depth=3
+
+SystemVariable.EditableLibTypes=0,1,2
+
+atao.import.clientImport.create.dbSequence=${bamboo.build.dir}/checkout/atao/misc/sqlscripts/atao_seqfinder.sql
+
+
+
+no.junit.build=1
+
+atao.import.deleteLibraries=true
+
+#This is needed so that the CI Build uses svn db folder instead of zips
+atao.importexport.zip=false
+#RE-709 adding per Chetna for Jboss upgrade
+atao.hibernate.config=atao.hibernate.cfg.xml
+
+#Adding to help funct tests
+ClientVariable.ExternalServerReferencePath=http://kap-us-lbam2.corp.unicru.com:8080/index.jsp?
+
+SystemVariable.HMCURL=http://kap-us-lbam2.corp.unicru.com:8080/hmc
+SystemVariable.InternalServerReference=http://kap-us-lbam2.corp.unicru.com:8080
+SystemVariable.ExternalServerReference=http://kap-us-lbam2.corp.unicru.com:8080
+SystemVariable.ExternalServerContextPath=/
+
+#RE-850 
+atao.form.parameter.encoder=com.deploy.atao.controller.ParameterEncoder

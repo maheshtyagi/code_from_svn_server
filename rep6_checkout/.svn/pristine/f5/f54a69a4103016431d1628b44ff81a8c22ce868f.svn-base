@@ -1,0 +1,66 @@
+##
+# ---------------------------------------
+#target.db=trunk87
+ target.db=VIDEOINTERVIEW
+ branch=VIDEOINTERVIEW
+
+ 
+new.db.url=jdbc:oracle:thin:@kdb-us-hsgeld01.corp.unicru.com:1521:bvteng
+#new.db.url=jdbc:oracle:thin:@kdb-us-bomvsr1.corp.unicru.com:1521:orclqa2
+new.db.user=${target.db}
+new.db.tablespace=CI_DATA
+dba.user=engauto
+dba.pass=engauto
+#----------------------------------------
+# Atao Product Version info
+#----------------------------------------
+atao.major=9
+atao.minor=0
+atao.service=105
+atao.patch=0
+product.version=${atao.major}.${atao.minor}
+atao.version=${atao.major}.${atao.minor}.${atao.service}.${atao.patch}
+atao.release=${atao.major}.${atao.minor}
+build.number.root=${atao.version}
+#build.number.root=${product.version}.${atao.service}
+#build.number.root=${product.version}.0
+bom.file.name=misc/boms/${product.version}_SR${atao.service}_Bom.xml
+#bom.file.name=misc/boms/${product.version}_Bom.xml
+# bom.file.name=misc/boms/8.7_SR6_Bom.xml
+# bom.file.name=misc/boms/8_7_Bom.xml
+# -----------------------
+# Staging properties
+# ----------------------
+atao.stage.top=/export/data/dev-ftp/azetra/packages/VIDEOINTERVIEW_BOM
+test.atao.stage.top=/export/data/dev-ftp/azetra/packages/VIDEOINT_BOM/BOM.test/${branch}
+atao.stage.host=it-peace.corp.unicru.com
+atao.stage.account=rebuild
+atao.stage.notification="ataoAlerts@cadienttalent.com"
+#atao.stage.notification="KTMDContinuousEngineering@kronos.com,TMDEast8.xContinuousTestingTeam@kronos.com,KTMDScrumMasters@kronos.com,HSGIntegrationsNewVendor@kronos.com"
+
+build.baseRoot=${bamboo.build.dir}/checkout
+global.config.path=${bamboo.build.dir}/localConfigFiles
+svn.branch=svn+ssh://it-apps-4.corp.unicru.com/svnroot/repositories/branches/VIDEOINTERVIEW
+
+svn.checkout.url=${svn.branch}/atao
+CIfrom.revision=HEAD
+svn.db.checkout.url=${svn.branch}/db
+db.from.revision=${CIfrom.revision}
+svn.ASSMNTcheckout.url=svn+ssh://it-apps-4.corp.unicru.com/svnroot/repository4/trunk/assessments
+ASSMNTfrom.revision=HEAD
+svn.help.checkout.url=${svn.branch}/help
+help.from.revision=HEAD
+db.tnsname=kdbushsgeld01
+# not used?
+build.number.iteration=1
+
+# Include assessment jars every time in bom per Mayank new bom creation processs. So always keep the below property un-commented.
+ASSMNT.build=true
+
+# For automatic update of rev numbers in .jar names in BOM file
+atao.jar.list=applications,core,integration,ldap,services,taglibs,tools,webservices,workflow,model-common,model-core,model-tmd-apps
+assessment.jar.list=api,impl,model
+
+# New ant script name (8.7SR3+)
+release.script=release.xml
+

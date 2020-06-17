@@ -1,0 +1,26 @@
+build.baseRoot=/export/home/rebuild/bamboo-home/xml-data/build-dir/GOLD-CIBUILD/checkout
+global.config.path=/export/home/rebuild/bamboo-home/xml-data/build-dir/GOLD-CIBUILD/localConfigFiles
+svn.checkout.url=svn://svn.deploy.com/repositories/trunk/atao
+CIfrom.revision=HEAD
+svn.ASSMNTcheckout.url=svn://svn.deploy.com/repository4/trunk/assessments
+ASSMNTfrom.revision=HEAD
+svn.help.checkout.url=svn://svn.deploy.com/repositories/trunk/help
+help.from.revision=HEAD
+build.number.root=8.6.0
+keep.build.files=false
+backup.existing.deployment=false
+udp.address=230.0.0.40
+cluster.group=kapushsgela038080
+db.tnsname=
+jboss.http.port=8080
+jboss.jndi.port=1099
+upgrade.sql=8_6_Schema_Upgrade.sql
+cleanup.sql=table_cleanup.sql
+clover.coverage=true
+
+#Properties for removing build activity
+#no.checkoutcompile.build=1
+#no.deploy.build=1
+#no.se.build=1
+no.junit.build=1
+#no.clover.report=1

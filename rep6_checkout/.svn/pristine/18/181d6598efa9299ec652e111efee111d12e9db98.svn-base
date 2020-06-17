@@ -1,0 +1,3 @@
+remote.ant.host=kap-us-hsggrid16
+remote.ant.port=3000
+remote.control.port.base=3

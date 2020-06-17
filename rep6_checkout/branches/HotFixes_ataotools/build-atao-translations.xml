@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<project name="build-atao-translations" default="get-updated-assets-for-translations" basedir=".">
+
+     <!-- Importing common utilities file -->
+     <import file="commonUtil.xml"/>
+     <target name="create-checkout-setup">
+            <echo message="=========> Check-out a fresh copy of revision ${CIfrom.revision} from ${svn.checkout.url}" level="info" />
+            <svn>
+                <checkout url="${svn.checkout.url}" destPath="${build.base}" revision="${CIfrom.revision}" />
+           </svn>
+           <antcall target="checkout-assessments" />
+           <antcall target="copy-buildtime-configfiles"/>
+           <antcall target="setup-build-number"/>
+           <antcall target="build-no-release"/>
+
+
+        </target>
+      
+      <target name="checkout-db-revisions" depends="create-checkout-setup">
+            <echo message="==> Export a fresh copy of revision ${db.start.revision} from ${svn.db.checkout.url1} AND revision ${db.end.revision} from ${svn.db.checkout.url2}" level="info" />
+            <parallel>
+                <svn>
+                    <export srcUrl="${svn.db.checkout.url2}" destPath="${build.baseRoot}/new" revision="${db.end.revision}"  force="true"/>
+                  </svn>
+                <svn>
+                     <export srcUrl="${svn.db.checkout.url1}" destPath="${build.baseRoot}/old" revision="${db.start.revision}"  force="true"/>
+                 </svn>
+                
+            </parallel>
+            <mkdir dir="${build.baseRoot}/export"/>
+      </target>
+      <target name="get-updated-assets-for-translations" description="" depends="checkout-db-revisions">
+          <property file="localEarBuild.properties"/>
+          <property name="build.base" value="${build.baseRoot}/atao"/>
+          <property name="buildtime.config.path" value="${global.config.path}/buildAndRelease"/>
+
+            <!-- For duration of import only, get rid of existing properties -->
+            <move   file="${build.base}/antLocalSettings.properties"               tofile="${build.base}/antLocalSettings.properties.bak"              overwrite="true" />
+                <propertyfile file="${buildtime.config.path}/antLocalSettings.properties.misc">
+			<entry key="asset.dir" value="${build.baseRoot}/new" />
+			<entry key="old.asset.dir" value="${build.baseRoot}/old"/>
+			<entry key="export.dir" value="${build.baseRoot}/export"/>
+		</propertyfile>
+
+            <!-- Create new property files by concatenating the additional properties
+                 required by import-all with the existing property files for this build -->
+            <concat destfile="${build.base}/antLocalSettings.properties">
+                <filelist dir="${buildtime.config.path}" files="antLocalSettings.properties.misc,antLocalSettings.properties"/>
+           </concat>
+
+            <record name="assetcompare.log" action="start"/>
+    	        <ant antfile="${build.base}/build.xml" dir="${build.base}" inheritall="false">
+    	            <target name="asset-compare"/>
+                </ant>
+            <record name="assetcompare.log" action="stop"/>
+
+            <!-- save copy of import-all configs -->
+            <move   file="${build.base}/antLocalSettings.properties"               tofile="${build.base}/antLocalSettings.properties.misc"              overwrite="true" />
+            <!-- restore originals -->
+            <move   file="${build.base}/antLocalSettings.properties.bak"               tofile="${build.base}/antLocalSettings.properties"              overwrite="true" />
+      </target>
+
+ </project>

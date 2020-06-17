@@ -1,0 +1,59 @@
+#-----------------------------------------------------------------------------
+# BOMFile validation - Use while validating the BOM xml override these
+# in local settings
+#-----------------------------------------------------------------------------
+svn.checkout.url=svn+ssh://it-apps-4.corp.unicru.com/svnroot/repositories/branches/V90SR102HOTFIXES
+atao.to.revision=HEAD
+#The revision from where the branch was created or the last
+#release was made.
+
+###################################################################
+user=rebuild
+password=Rb20081216
+##################################################################
+#go to svn-tags. View the last BOM releasesd tag. In front of it pick the revision number from the comments
+#atao.from.revision=101858
+ atao.from.revision=103188
+db.to.revision=${atao.to.revision}
+db.from.revision=${atao.from.revision}
+#------------------------------------------------------------------------------------------
+# The directory where the release vehicle will be assembled.
+#------------------------------------------------------------------------------------------
+release.assmbly.dir=${bamboo.build.dir}/checkout/atao/relWorkArea
+
+#------------------------------------------------------------------------------------------
+# CF
+#------------------------------------------------------------------------------------------
+cfusion_ear.location=/export/home/rebuild/InstallationFiles/coldfusion/8/cfusion.ear
+#include.cf=true
+#cf.war.name=cfusion.war
+
+#------------------------------------------------------------------------------------------
+# Customer Library Location
+# This is the location of the client / ps / cet libraries.
+# The import list is isterated and imported.  Note that all libraries in all directories
+#------------------------------------------------------------------------------------------
+customer.lib.repository=/export/home/rebuild/custlibs/libraries
+customer.lib.import.list=
+#AEP,HomeDepot,JPL,Prudential,SWA,Sobeys,Sprint,Synopsys,Vanderbilt,tools,verticals
+
+#------------------------------------------------------------------------------------------
+# Release Scripts,
+# This is the location of the client / ps / cet libraries.
+# The import list is isterated and imported.  Note that all libraries in all directories
+#------------------------------------------------------------------------------------------
+release.ddl=/export/home/rebuild/custlibs/libraries
+upgrade.script.dir=misc/sqlscripts/upgrades
+
+
+#------------------------------------------------------------------------------------------
+# BOMFiles - must be relative to atao root. create many of these and override in locall settings
+#------------------------------------------------------------------------------------------
+#bom.file.name=misc/boms/exampleBom.xml
+
+#------------------------------------------------------------------------------------------
+# Transportable release zip file
+#------------------------------------------------------------------------------------------
+create.transportable.release=true
+
+

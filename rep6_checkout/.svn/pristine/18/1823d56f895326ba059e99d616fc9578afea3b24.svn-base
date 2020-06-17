@@ -1,0 +1,3 @@
+remote.ant.host=ki-co-se2.in.kronos.com
+remote.ant.port=2000
+remote.control.port.base=2

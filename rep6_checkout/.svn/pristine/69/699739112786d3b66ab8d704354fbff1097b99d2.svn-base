@@ -1,0 +1,61 @@
+#============================
+# Purpose of the file: 
+# This is the only file that needs to be modified for running Bamboo plans:Repeat BOM Install, Update Install Version, Save VM Version & RestoreVM
+#============================
+
+#============================
+# Properties to be used for running bamboo plans are:
+# REPEAT BOM INSTALL uses (major.release.number + current.release.number + is.dev.ftp + is.manual.BOM + manual.BOM.version + manual.BOM.zip.version)
+# UPDATE INSTALL VERSION uses (new.sr.number + major.release.number + current.release.number + is.dev.ftp + is.manual.BOM + manual.BOM.version + manual.BOM.zip.version)
+# SAVE VM VERSION uses (base.vm.name + new.sr.number)
+# ---You have to modify both old.sr.number and new.sr.number with valid values 
+# --Otherwise the buiild will fail.
+# RESTORE VM uses (base.vm.name + old.sr.number)
+# ---You have to modify both old.sr.number and new.sr.number with valid values 
+# --Otherwise the buiild will fail.
+#============================
+
+
+#============================
+# Initial name of the VM snapshot(which is combination of base.vm.name + new.sr.number or base.vm.name + old.sr.number) is specified here.
+# Name format is VMImage_*.*SR_ where *.* defines major release number. Examples: VMImage_8.7SR_, VMImage_8.8SR_
+base.vm.name=VMImage_9.0SR_
+
+# Value specified here when combined with base.vm.name forms name of the new VM snapshot.Format to be used is SR**HF** where HF name is optional.
+new.sr.number=SR104
+
+# Value specified here when combined with base.vm.name forms name of the old VM snapshot.Format to be used is SR**HF** where HF name is optional.
+old.sr.number=SR103
+
+# Major Release Version	number is specified here. Examples: 8.7, 8.8, 9.0 etc
+major.release.number=9.0
+
+# current.release.number is the version we are going to install. It is a combination of major.release.number + SR Number +HF Number
+# Example to install 8.8SR5HF1 value should be 8.8.5.1, for 9.0SR1 value should be 9.0.1.0
+current.release.number=9.0.104.0
+
+# This property defines whether to pick BOM from dev-ftp or from manual.BOM.path. Value 'false' means the install uses dev-ftp otherwise expects a manual.BOM.path
+is.dev.ftp=false
+#The below two properties define the test BOM location which is
+#needed by the feature teams.The below properties are  applicable for the BOM
+#created by the feature teams.
+#is.test.BOM determines if the BOM comes from the feature team in ~/keep1month/BOM.test (is.test.BOM=true)
+# or
+#a trunk created BOM in ~/packages (is.test.BOM=false) (current.release.number, is.manual.BOM=true, manual.BOM.version and manual.BOM.zip.version) if not latest.
+is.test.BOM=false
+branch=trunk
+
+
+# BOM is picked from the path defined here when 'is.dev.ftp' is set to 'true'
+manual.BOM.path=/home/ataoci45/InstallationFiles/
+
+# This property defines whether to pick the latest BOM or a specific BOM from the BOM location. 
+# Set is.manual.BOM=true to pick BOM defined at manual.BOM.version and manual.BOM.zip.version. If 'false' this will pick the latest BOM.
+
+is.manual.BOM=false
+ 
+# This defines the name of the BOM folder on dev-ftp. When 'is.manual.BOM' is set to 'true', then value is picked from this property.
+manual.BOM.version=80790
+  
+# This defines name of the BOM Zip file in 'manual.BOM.version' folder on dev-ftp. When 'is.manual.BOM' is set to 'true', then value is picked from this property.
+manual.BOM.zip.version=80790

@@ -1,0 +1,95 @@
+log4j.appender.atao=org.apache.log4j.RollingFileAppender
+log4j.appender.atao.File=/export/home/rebuild/bamboo-home/xml-data/build-dir/SILVER-RELEASE/packageWorkDir/atao.log
+log4j.appender.atao.Append=true
+log4j.appender.atao.MaxFileSize=10000KB
+log4j.appender.atao.MaxBackupIndex=5
+log4j.appender.atao.ImmediateFlush=true
+log4j.appender.atao.layout=org.apache.log4j.PatternLayout
+log4j.appender.atao.layout.ConversionPattern=%d{DATE} %5p %c{1}:%L - %m%n
+log4j.rootLogger=warn, atao
+log4j.logger.atao.persist=error, atao
+log4j.logger.model=error, atao
+log4j.logger.cataloger=error, atao
+log4j.logger.net.sf.ehcache=error, atao
+
+log4j.appender.integrationfile=org.apache.log4j.RollingFileAppender
+log4j.appender.integrationfile.File=/export/home/rebuild/bamboo-home/xml-data/build-dir/SILVER-RELEASE/packageWorkDir/integration.log
+log4j.appender.integrationfile.Append=true
+log4j.appender.integrationfile.MaxFileSize=10000KB
+log4j.appender.integrationfile.MaxBackupIndex=5
+log4j.appender.integrationfile.ImmediateFlush=true
+log4j.appender.integrationfile.layout=org.apache.log4j.PatternLayout
+log4j.appender.integrationfile.layout.ConversionPattern=%d{DATE} %5p %c{1}:%L - %m%n
+log4j.logger.integration=debug, integrationfile
+log4j.additivity.integration=false
+
+log4j.appender.hibernatefile=org.apache.log4j.RollingFileAppender
+log4j.appender.hibernatefile.File=/export/home/rebuild/bamboo-home/xml-data/build-dir/SILVER-RELEASE/packageWorkDir/hibernate.log
+log4j.appender.hibernatefile.Append=true
+log4j.appender.hibernatefile.MaxFileSize=10000KB
+log4j.appender.hibernatefile.MaxBackupIndex=5
+log4j.appender.hibernatefile.ImmediateFlush=true
+log4j.appender.hibernatefile.layout=org.apache.log4j.PatternLayout
+log4j.appender.hibernatefile.layout.ConversionPattern=%d{DATE} %5p %c{1}:%L - %m%n
+log4j.logger.org.hibernate=info, hibernatefile
+log4j.additivity.org.hibernate=false
+
+log4j.appender.emailfile=org.apache.log4j.RollingFileAppender
+log4j.appender.emailfile.File=/export/home/rebuild/bamboo-home/xml-data/build-dir/SILVER-RELEASE/packageWorkDir/email.log
+log4j.appender.emailfile.Append=true
+log4j.appender.emailfile.MaxFileSize=10000KB
+log4j.appender.emailfile.MaxBackupIndex=5
+log4j.appender.emailfile.ImmediateFlush=true
+log4j.appender.emailfile.layout=org.apache.log4j.PatternLayout
+log4j.appender.emailfile.layout.ConversionPattern=%d{DATE} %5p %c{1}:%L - %m%n
+log4j.logger.email=debug, emailfile
+log4j.additivity.email=false
+
+log4j.appender.mailfile=org.apache.log4j.RollingFileAppender
+log4j.appender.mailfile.File=/export/home/rebuild/bamboo-home/xml-data/build-dir/SILVER-RELEASE/packageWorkDir/mail.log
+log4j.appender.mailfile.Append=true
+log4j.appender.mailfile.MaxFileSize=10000KB
+log4j.appender.mailfile.MaxBackupIndex=5
+log4j.appender.mailfile.ImmediateFlush=true
+log4j.appender.mailfile.layout=org.apache.log4j.PatternLayout
+log4j.appender.mailfile.layout.ConversionPattern=%d{DATE} %5p %c{1}:%L - %m%n
+log4j.logger.mail=debug, mailfile
+log4j.additivity.mail=false
+
+log4j.appender.bgparsingfile=org.apache.log4j.RollingFileAppender
+log4j.appender.bgparsingfile.File=/export/home/rebuild/bamboo-home/xml-data/build-dir/SILVER-RELEASE/packageWorkDir/bgparsing.log
+log4j.appender.bgparsingfile.Append=true
+log4j.appender.bgparsingfile.MaxFileSize=10000KB
+log4j.appender.bgparsingfile.MaxBackupIndex=5
+log4j.appender.bgparsingfile.ImmediateFlush=true
+log4j.appender.bgparsingfile.layout=org.apache.log4j.PatternLayout
+log4j.appender.bgparsingfile.layout.ConversionPattern=%d{DATE} %5p %c{1}:%L - %m%n
+log4j.logger.webservices.resumeParsing=debug, bgparsingfile
+log4j.additivity.webservices.resumeParsing=false
+
+log4j.appender.jbpmfile=org.apache.log4j.RollingFileAppender
+log4j.appender.jbpmfile.File=/export/home/rebuild/bamboo-home/xml-data/build-dir/SILVER-RELEASE/packageWorkDir/jbpm.log
+log4j.appender.jbpmfile.Append=true
+log4j.appender.jbpmfile.MaxFileSize=10000KB
+log4j.appender.jbpmfile.MaxBackupIndex=5
+log4j.appender.jbpmfile.ImmediateFlush=true
+log4j.appender.jbpmfile.layout=org.apache.log4j.PatternLayout
+log4j.appender.jbpmfile.layout.ConversionPattern=%d{DATE} %5p %c{1}:%L - %m%n
+log4j.category.org.jbpm=warn, jbpmfile
+log4j.additivity.org.jbpm=false
+
+### direct jibx log messages to jibx.log ###
+log4j.appender.jibx=org.apache.log4j.RollingFileAppender
+log4j.appender.jibx.File=jibx.log
+log4j.appender.jibx.Append=true
+log4j.appender.jibx.MaxFileSize=1000KB
+log4j.appender.jibx.MaxBackupIndex=5
+log4j.appender.jibx.ImmediateFlush=true
+log4j.appender.jibx.layout=org.apache.log4j.PatternLayout
+log4j.appender.jibx.layout.ConversionPattern=%d{ABSOLUTE} %5p %c{1}:%L - %m%n
+
+log4j.category.jibx.logger=warn, jibx
+log4j.logger.asset=warn, jibx
+log4j.additivity.jibx.logger=false
+
+

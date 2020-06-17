@@ -1,0 +1,57 @@
+<?xml version='1.0' encoding='utf-8'?>
+
+<!DOCTYPE hibernate-configuration PUBLIC
+          "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+          "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
+
+<!-- hibernate conifguration file for all atao applications -->
+<!-- There must be a correlation betwetween the named datasource java:/ataoDS and the deployed datasource file. -->
+<hibernate-configuration>
+  <session-factory>
+
+    <!--  props for jndi datasource -->
+    <!-- props for jdbc data source
+    <property name="hibernate.dialect">org.hibernate.dialect.Oracle9Dialect</property>
+    <property name="hibernate.connection.driver_class">oracle.jdbc.driver.OracleDriver</property>
+    <property name="hibernate.connection.url">jdbc:oracle:thin:@eng-habitation.deploy.com:1521:DEVHMC</property>
+    <property name="hibernate.connection.username">COMMENTED</property>
+    <property name="hibernate.connection.password">COMMENTED</property>
+    -->
+
+    <!-- 999  props for JTA support
+    <property name="transaction.manager_lookup_class">org.hibernate.transaction.JBossTransactionManagerLookup</property>
+    <property name="transaction.factory_class">org.hibernate.transaction.JTATransactionFactory</property>
+    <property name="jta.UserTransaction">UserTransaction</property>
+     -->
+
+    <!-- 999  remove these props for jdbc datasource   -->
+    <!-- in seconds -->
+    <property name="c3p0.idle_test_period">1800</property>
+    <property name="c3p0.max_size">15</property>
+    <property name="c3p0.min_size">5</property>
+    <property name="c3p0.max_statements">400</property>
+    <property name="c3p0.timeout">1800</property>
+
+    <!-- 999  update these for Treecache support -->
+    <property name="hibernate.cache.provider_configuration_file_resource_path">ehcache.xml</property>
+    <property name="hibernate.cache.provider_class">net.sf.ehcache.hibernate.EhCacheProvider</property>
+    <property name="hibernate.cache.use_query_cache">true</property>
+    <property name="hibernate.cache.use_secondlevel_cache">true</property>
+    <property name="hibernate.show_sql">false</property>
+    <property name="hibernate.format_sql">false</property>
+    <property name="hibernate.generate_statistics">true</property>
+
+    <property name="hibernate.dialect">org.hibernate.dialect.Oracle9Dialect</property>
+    <property name="hibernate.connection.driver_class">oracle.jdbc.driver.OracleDriver</property>
+    <property name="hibernate.connection.url">jdbc:oracle:thin:@kdb-us-hsgeld01.us.kronos.com:1521:bvteng</property>
+    <property name="hibernate.connection.username">${target.db}</property>
+    <property name="hibernate.connection.password">${target.db}</property>
+    <!-- general props
+    <property name="hibernate.show_sql">true</property>
+    <property name="hibernate.format_sql">true</property>
+    <property name="hibernate.use_sql_comments">true</property>
+     -->
+
+  </session-factory>
+</hibernate-configuration>
+

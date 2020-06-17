@@ -1,0 +1,17 @@
+### overrides per instructions from RaviG  ###
+atao.export.clientExport.objectList=Client,ClientExtension,Application,Location!getLocationsHourlyAndSalary,LocationExtension:location.client.name,LocationGroup:clientExtension.client.name,Role:client.name,HiringProcess:clientExtension.client.name,PostingDestination:application.client.name,LogicalQualifier,Posting:postingSite.application.client.name,AtaoScript:client.name,Response:question.client.name,Question:client.name,Answer!getAnswerForClient,MailTemplate:client.name,LocationSpecificMessage:application.client.name,Permission:client.name,User!getInternalUsersForClient,UserExtension!getInternalUserExtensionsForClient,Person!getInternalPersonsForClient,Job:client.name,Requisition:client.name,Position:client.name,InterviewGuide:posting.postingSite.application.client.name,PromotionOffer:application.client.name,ClientTerminationCode:client.name,FormActivation:clientExtension.client.name,NewHireForm:clientExtension.client.name,AssessmentPhase:clientExtension.client.name,AssessmentFactorConfig:clientExtension.client.name
+# Commenting out so that it is getting picked from base.properties
+# atao.import.clientImport.core.importOrder=Client,ClientExtension,ClientTerminationCode,LabelInfo,Query Definition,LogicalQualifier,DisplaySet Definition,DisplayText,Permission,AppSequence,FileAsset,Files,SystemVariable,ScheduledTask,ScheduledTrigger,Role,Application,PostingDestination,Location,LocationExtension,LocationGroup,MailTemplate,HiringProcess,Job,Answer,Question,Response,AtaoScript,User,UserExtension,Person,AssessmentPhase,AssessmentFactorConfig,Position,Requisition,Posting,LocationSpecificMessage,InterviewGuide,PromotionOffer,Norm,FieldMapping,TemplateMapping,TemplateFormRule,FormActivation,NewhireForm
+atao.export.clientExport.hourly.objectList=
+atao.export.clientExport.salaried.objectList=
+atao.import.ignoreLooseCouplingExceptions=true
+atao.import.forceSaveChildObjects=true
+atao.jibx.db_expimplog.enable=false
+# For TD-197
+new.database=true
+new.database.lists=new.database
+export.new.database=true
+new.database.atao.jibx.db_expimplog.enable=true
+atao.importexport.zip=false
+
+

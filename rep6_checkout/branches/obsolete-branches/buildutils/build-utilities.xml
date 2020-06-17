@@ -1,0 +1,54 @@
+<project name="Clover reporting for functional tests" default="main" basedir=".">
+
+    <target name="main" depends="prepare-for-reports, create-reports, reset-clover-db, start-server" />
+    <target name="restart-server" description="Stop and start the app server" depends="stop-server, start-server" />
+
+
+    <target name="prepare-for-reports" description="Delete previous reports and shut down app server" depends="verify-input">
+        <parallel>
+            <!-- Clean the HTML & XML report directories -->
+            <delete>
+                <fileset dir="${main.build.dir}/checkout/atao/output/clover/html" includes="**/*.*"/>
+                <fileset dir="${main.build.dir}/checkout/atao/output/clover/xml" includes="**/*.*"/>
+            </delete>
+            <!-- Shut down the app to flush the collected data-->
+            <antcall target="stop-server" />
+        </parallel>
+    </target>
+
+
+    <target name="start-server" description="Start the app server" depends="verify-input">
+        <ant antfile="build-atao-ear.xml" dir="${main.build.dir}" target="start-jboss43"/>
+    </target>
+
+
+    <target name="stop-server" description="Stop the app server" depends="verify-input">
+        <ant antfile="build-atao-ear.xml" dir="${main.build.dir}" target="stop-jboss43"/>
+    </target>
+
+
+    <target name="verify-input" description="Verify that a build plan name has been set">
+        <fail unless="main.build.dir" message="EXITING: required parameter main.build.dir not set. Should be specified as a -D parameter on command line."/>
+        <echo message="Operating on ${main.build.dir}"/>
+    </target>
+
+
+    <target name="create-reports" description="Generate new Clover XML and HTML reports" depends="verify-input">
+        <!-- generate new XML & HTML reports -->
+        <ant antfile="build.xml" dir="${main.build.dir}/checkout/atao" target="xml-clover-report"/>
+        <ant antfile="build.xml" dir="${main.build.dir}/checkout/atao" target="html-clover-report"/>
+        <!-- Copy generated reports to this build plan's workarea
+             so this plan can report on and save the results-->
+        <copy todir="output" failonerror="true">
+        	<fileset dir="${main.build.dir}/checkout/atao/output/clover"/>
+        </copy>
+    </target>
+
+
+    <target name="reset-clover-db" description="Clean the Clover DB" depends="verify-input">
+        <ant antfile="build.xml" dir="${main.build.dir}/checkout/atao" target="clean-clover"/>
+        <ant antfile="build.xml" dir="${main.build.dir}/checkout/atao" target="use-clover"/>
+    </target>
+
+
+</project>

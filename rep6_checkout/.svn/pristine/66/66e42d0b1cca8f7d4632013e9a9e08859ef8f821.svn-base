@@ -1,0 +1,32 @@
+{
+  "capabilities":
+      [
+        {
+          "browserName": "chrome",
+          "maxInstances": 11,
+          "seleniumProtocol": "WebDriver"
+        },
+        {
+          "browserName": "firefox",
+          "maxInstances": 1,
+          "seleniumProtocol": "WebDriver"
+        },
+        {
+          "browserName": "internet explorer",
+          "maxInstances": 0,
+          "seleniumProtocol": "WebDriver"
+        }
+      ],
+    "configuration":
+        {
+    "cleanUpCycle": 2000,
+    "proxy": "org.openqa.grid.selenium.proxy.DefaultRemoteProxy",
+        "maxSession":11,
+    "port": 5562,
+
+    "host": "ip",
+    "register": true,
+    "registerCycle": 5000,
+        "hubPort":7171
+        }
+}

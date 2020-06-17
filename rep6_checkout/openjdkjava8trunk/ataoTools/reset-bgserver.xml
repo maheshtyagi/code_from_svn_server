@@ -1,0 +1,80 @@
+<?xml version="1.0"?>
+<!--BG Server reset script -->
+<project name="build-cleanup-bgserver" default="cleanup-bgserver" basedir=".">
+
+     <property name="bg.server.name" value="kap-us-hsgela03.us.kronos.com"/>
+     <property name="bg.user.name" value="lens"/>
+     <property name="bg.user.password" value="lens"/>
+     <property name="bg.vendor.name"   value="v90integration"/>
+     <property name="bg.lens.home"     value="/opt/bglens_USA"/>
+     <property name="bg.vendor.root"   value="${bg.lens.home}/data/resume"/>
+     
+     <target name="stop-bgserver" description="stop bgserver">
+     
+         <property name="bg.server.shutdown.delay" value="240"/>
+     
+         <echo message="shutting down *BGserver instance running on ${bg.server.name}"/> 
+            <sshexec host="${bg.server.name}" 
+	 	     username="${bg.user.name}" 
+	 	     password="${bg.user.password}"
+	 	     outputproperty="bg.server.shutdown"
+	 	     trust="true"
+	 	     failonerror="true"
+	 	     command=" cd ${bg.lens.home};touch lensstop.txt;./lensctl stop &gt; lensstop.txt" />
+         
+         <echo message="Waiting  for shutdown of  *BGserver instance running on ${bg.server.name}"/>
+          <waitfor maxwait="250" maxwaitunit="second" checkevery="10" checkeveryunit="second">
+	 	<resourcecontains resource="lensstop.txt" substring="Lens Shutdown Completed" />
+	  </waitfor>
+         <echo message="${bg.server.shutdown}"/>
+         <echo message="shut down complete for  *BGserver instance running on ${bg.server.name}"/>         
+     </target>
+     <target name="cleanup-bgserver" depends="stop-bgserver" description="Clean up vendor specific directories">
+     
+         <property name="bg.cleanup.time" value="240"/>
+     
+         <sshexec host="${bg.server.name}" 
+	          username="${bg.user.name}" 
+	          password="${bg.user.password}"
+	          outputproperty="bg.cleanup"
+	          trust="true"
+	          failonerror="true"
+	          command="cd ${bg.vendor.root}/${bg.vendor.name} &amp;&amp; nohup rm -rf -v * &amp;&amp; echo Folder deleted &amp;" />
+         <echo message="Waiting  for cleanup of  *BGserver instance running on ${bg.server.name}"/>
+	  <!--<echo message="${bg.cleanup}"/>-->
+	 <echo message="Cleanup of vendor ${bg.vendor.name} on *BGserver instance running on ${bg.server.name} completed"/>
+	 
+	 <!-- Call ant target to start the bgserver instance -->
+	 <antcall target="start-bgserver"/>
+     </target>
+     
+     <target name="start-bgserver" description="start-BG server">
+         <!--<property name="bg.server.startup.delay" value="600000"/> -->
+                  <sshexec host="${bg.server.name}" 
+                  username="${bg.user.name}" 
+		  password="${bg.user.password}"
+		  outputproperty="bg.server.startup"
+		  failonerror="false"
+		  trust="true"
+		  command="cd ${bg.lens.home};nohup ./lensctl start &gt; /dev/null 2&gt; error.log &lt; /dev/null &amp;" />
+         <echo message="Waiting  for shutdown of  *BGserver instance running on ${bg.server.name}  =============="/>
+	 <echo message="${bg.server.startup}"/>
+	 <echo message="Start up  complete for  *BGserver instance running on ${bg.server.name}  ========"/> 
+     </target>
+
+<!-- RE-914 Reset-BGServer bamboo plan needs correction for timeout -->
+<!--<target name="start-bgserver" description="start-BG server">
+<waitfor maxwait="9" maxwaitunit="minute" checkevery="1" checkeveryunit="minute">         
+         <sshexec host="${bg.server.name}" 
+                  username="${bg.user.name}" 
+		  password="${bg.user.password}"
+		  outputproperty="bg.server.startup"
+		  failonerror="false"
+		  trust="true"
+		  command="cd ${bg.lens.home};./lensctl start " />
+</waitfor>
+         <echo message="Waiting  for shutdown of  *BGserver instance running on ${bg.server.name}  =============="/>
+	 <echo message="${bg.server.startup}"/>
+	 <echo message="Start up  complete for  *BGserver instance running on ${bg.server.name}  ========"/> 
+     </target>-->
+</project>

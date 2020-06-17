@@ -1,0 +1,98 @@
+##########################################################################################################
+#
+# Author: Andrew Thompson - W3QA
+# 14th February 2009
+#
+##########################################################################################################
+
+##################################################################
+#
+# Notes on Selenium GRID:
+# 1. HUBS  
+# If you have 1 hub you have one selenium.grid.server.port
+# for your SRC instances to reference.
+# 2. TERMINOLOGY 
+# The SRC "browser" parameter can mean pretty much what
+# you what it to be under the GRID and is best viewed as the running environment,
+# rather than simply the browser.
+# I have chosen to call the parameter names specified here "environments"
+# rather than browser.
+# You configure environments within the 
+# grid_configuration.yml file.  
+# 
+##################################################################
+#
+# Selenium GRID - will use the standard selenium settings 
+# as well as these that are paticular to GRID:
+#
+##############################
+#
+# 1. Firstly define the hubs properties
+#
+selenium.grid.hub.url=http://localhost:4444
+selenium.grid.hub.port =4444
+selenium.grid.hub.host =localhost
+#
+##############################
+#
+# 2. Next define the SRC's that will form the GRID.
+# By default you get 6 - if you need more remember
+# to create corresponding entries in the Selenium GRID ant script
+#
+selenium.grid.server.host.one=localhost
+selenium.grid.server.environment.one=*chrome
+selenium.grid.server.port.one=5555
+selenium.grid.server.args.one=-multiwindow
+
+selenium.grid.server.host.two=localhost
+selenium.grid.server.environment.two=*chrome
+selenium.grid.server.port.two=5556
+selenium.grid.server.args.two=-multiwindow
+
+selenium.grid.server.host.three=localhost
+selenium.grid.server.environment.three=*chrome
+selenium.grid.server.port.three=5557
+selenium.grid.server.args.three=-multiwindow
+
+selenium.grid.server.host.four=localhost
+selenium.grid.server.environment.four=*iehta
+selenium.grid.server.port.four=5558
+selenium.grid.server.args.four=-multiwindow
+
+selenium.grid.server.host.five=localhost
+selenium.grid.server.environment.five=*iehta
+selenium.grid.server.port.five=5559
+selenium.grid.server.args.five=-multiwindow
+
+selenium.grid.server.host.six=localhost
+selenium.grid.server.environment.six=*iehta
+selenium.grid.server.port.six=5560
+selenium.grid.server.args.six=-multiwindow
+
+##############################
+#
+# 3. Finally define the properties of the SRCs instantiated by the HRMES 
+# We have defined 4 here.
+# Again if you need more create corresponding entries in the Ant
+# script - build.xml file.
+#
+##############################
+
+selenium.grid.src.environment.one=*chrome
+selenium.grid.src.starting.url.one=http://www.w3schools.com/
+selenium.grid.src.hrmes.file.location.one=testsuite_sharad.xls,testsuite_sharad_grid2.xls
+#selenium.grid.src.hrmes.file.location.one=testsuite_sharad.xls
+
+#selenium.grid.src.environment.two=*chrome
+#selenium.grid.src.starting.url.two=http://www.w3schools.com/
+#selenium.grid.src.hrmes.file.location.two=testsuite_sharad_grid2.xls
+
+#selenium.grid.src.environment.three=*iehta
+#selenium.grid.src.starting.url.three=http://www.w3schools.com/
+#selenium.grid.src.hrmes.file.location.three=testsuite_sharad_grid3.xls
+
+#selenium.grid.src.environment.four=*iehta
+#selenium.grid.src.starting.url.four=http://www.w3schools.com/
+#selenium.grid.src.hrmes.file.location.four=testsuite_sharad_grid4.xls
+
+##################################################################

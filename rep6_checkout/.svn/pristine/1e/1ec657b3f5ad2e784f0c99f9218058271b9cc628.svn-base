@@ -1,0 +1,42 @@
+#############################################################################
+#Atao Custom Properties
+#############################################################################
+finalbronzeuser.atao.persist.jdbc.driver=oracle.jdbc.driver.OracleDriver
+finalbronzeuser.atao.persist.jdbc.url=jdbc:oracle:thin:@kdb-us-hsgeld01.us.kronos.com:1521:bvteng
+finalbronzeuser.atao.persist.jdbc.user=finalbronzeuser
+finalbronzeuser.atao.persist.jdbc.pass=finalbronzeuser
+finalbronzeuser.hibernate.dialect=org.hibernate.dialect.Oracle9Dialect
+finalbronzeuser.atao.assets=/export/home/rebuild/bamboo-home/xml-data/build-dir/BRONZE-CIBUILD/checkout/atao/core/assets
+finalbronzeuser.atao.db.type=Oracle
+
+atao.assets=/export/home/rebuild/bamboo-home/xml-data/build-dir/BRONZE-CIBUILD/checkout/atao/core/assets
+atao.assets.files=core/assets/applications
+atao.assets.pdfs=/export/home/rebuild/bamboo-home/xml-data/build-dir/BRONZE-CIBUILD/checkout/atao/applications/hmc/form
+
+atao.persist.logical.db=finalbronzeuser
+
+
+atao.jibx.db_expimplog.enable=false
+
+
+#############################################################################
+# Hibernate properties
+#############################################################################
+
+atao.virtualAssetPath=/core/assets
+
+###for c3po connection caching
+hibernate.cache.use_query_cache=true
+hibernate.c3p0.idle_test_period=1800
+hibernate.c3p0.timeout=1800
+hibernate.c3p0.max_size=300
+hibernate.c3p0.min_size=50
+hibernate.c3p0.max_statements=0
+
+hibernate.max_fetch_depth=3
+
+SystemVariable.EditableLibTypes=0,1,2
+
+#atao.import.clientImport.create.dbSequence=$JBOSS_HOME$/server/default/deploy/ci.ear/ci.war/misc/sqlscripts/atao_seqfinder.sql
+
+no.junit.build=1

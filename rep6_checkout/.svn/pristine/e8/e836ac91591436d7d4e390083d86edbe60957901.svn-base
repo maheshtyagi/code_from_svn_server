@@ -1,0 +1,4 @@
+app.server.dir=/home/app2/jboss43-8080/jboss-as
+app.server.nix.start=/bin/run.sh -b 0.0.0.0
+app.server.nix.stop=/bin/shutdown.sh -S
+atao.build.number=0

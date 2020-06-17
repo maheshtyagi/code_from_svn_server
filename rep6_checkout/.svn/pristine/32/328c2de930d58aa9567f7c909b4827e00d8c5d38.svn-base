@@ -1,0 +1,37 @@
+#############################################################################
+# Driver segments
+#############################################################################
+devintbranch.atao.persist.jdbc.driver=oracle.jdbc.driver.OracleDriver
+devintbranch.atao.persist.jdbc.url=jdbc:oracle:thin:@dev-integrations-db.us.kronos.com:1521:DEVINTBRANCH
+devintbranch.atao.persist.jdbc.user=atao
+devintbranch.atao.persist.jdbc.pass=atao
+devintbranch.hibernate.dialect=org.hibernate.dialect.Oracle9Dialect
+devintbranch.atao.assets=/home/atao/bamboo-home/xml-data/build-dir/INTBRANCH-SHORT/atao/core/assets
+devintbranch.atao.db.type=Oracle
+
+atao.assets=/home/atao/bamboo-home/xml-data/build-dir/INTBRANCH-SHORT/atao/core/assets
+atao.assets.files=core/assets/applications
+
+atao.persist.logical.db=devintbranch
+
+
+atao.jibx.db_expimplog.enable=false
+
+# JG - added on 12/19/06
+# commented this here as on eng-infestation we deploying application in developer mode
+# atao.deploymentmode=production
+
+atao.virtualAssetPath=/core/assets
+
+###for c3po connection caching
+hibernate.cache.use_query_cache=true
+hibernate.c3p0.idle_test_period=30
+hibernate.c3p0.timeout=30
+hibernate.c3p0.max_size=15
+hibernate.c3p0.min_size=5
+hibernate.generate_statistics=true
+hibernate.max_fetch_depth=3
+
+SystemVariable.EditableLibTypes=0,1,2
+
+#atao.import.clientImport.create.dbSequence=/home/atao/cruisecontrol-work/atao-project/atao/misc/sqlscripts/atao_seqfinder.sql
